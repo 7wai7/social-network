@@ -67,7 +67,7 @@ export class PostsController {
     }
 
 
-    @Post("create")
+    @Post()
     @UseGuards(JwtAuthGuard)
     @UseInterceptors(FilesInterceptor('files'))
     createPost(

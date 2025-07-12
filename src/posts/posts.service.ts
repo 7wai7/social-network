@@ -4,9 +4,9 @@ import { PostFileDto } from 'src/dto/create-post-file.dto';
 import { PostDto } from 'src/dto/create-post.dto';
 import { Post } from 'src/models/posts.model';
 import { PostFile } from 'src/models/postFile.model';
+import { User } from 'src/models/users.model';
 import * as fs from 'fs';
 import * as path from 'path';
-import { User } from 'src/models/users.model';
 
 @Injectable()
 export class PostsService {
@@ -28,22 +28,24 @@ export class PostsService {
 
     async getNewsFeed(userId: number, offset: number = 0, limit: number = 20) {
         return await this.postsModel.findAll({
-            include: [{
-                model: User,
-                as: 'user',
-                include: [{
+            include: [
+                {
                     model: User,
-                    as: 'followers',
-                    where: { id: userId },
-                    required: true,
-                    attributes: [],
-                    through: { attributes: [] },
-                }],
-            },
-            {
-                model: PostFile,
-                as: 'files',
-            }],
+                    as: 'user',
+                    include: [{
+                        model: User,
+                        as: 'followers',
+                        where: { id: userId },
+                        required: true,
+                        attributes: [],
+                        through: { attributes: [] },
+                    }],
+                },
+                {
+                    model: PostFile,
+                    as: 'files',
+                }
+            ],
             order: [['createdAt', 'DESC']],
             limit,
             offset,

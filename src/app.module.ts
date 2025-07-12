@@ -11,6 +11,8 @@ import { PostFile } from './models/postFile.model';
 import { Follow } from './models/follow.model';
 import { CommentsModule } from './comments/comments.module';
 import * as dotenv from 'dotenv';
+import { Comment } from './models/comments.model';
+import { CommentFile } from './models/commentFiles.model';
 dotenv.config();
 
 
@@ -25,7 +27,7 @@ dotenv.config();
 			username: process.env.POSTGRES_USER,
 			password: process.env.POSTGRES_PASSWORD,
 			database: process.env.POSTGRES_DB,
-			models: [Follow, User, Post, PostFile],
+			models: [Follow, User, Post, PostFile, Comment, CommentFile],
 			autoLoadModels: true,
 			synchronize: true,
 		}),
