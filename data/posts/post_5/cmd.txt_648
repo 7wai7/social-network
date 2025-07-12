@@ -1,0 +1,11 @@
+Ефект Ігнаца Земмельвейса - це тенденція відкидати нову інформацію або докази, які суперечать усталеним переконанням або практикам
+
+
+Get-ChildItem -Recurse | Where-Object { $_.FullName -notmatch 'node_modules' } | ForEach-Object { $_.FullName.Substring($pwd.Path.Length + 1) }
+Get-ChildItem -Recurse | Where-Object { $_.FullName -notmatch 'site-packages' } | ForEach-Object { $_.FullName.Substring($pwd.Path.Length + 1) }
+
+виконання локальних скриптів
+Set-ExecutionPolicy Unrestricted -Scope CurrentUser
+
+повернути політику безпеки назад
+Set-ExecutionPolicy Restricted -Scope CurrentUser
