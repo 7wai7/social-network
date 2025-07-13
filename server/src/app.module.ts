@@ -15,6 +15,8 @@ import { Comment } from './models/comments.model';
 import { CommentFile } from './models/commentFiles.model';
 dotenv.config();
 
+console.log(process.env.POSTGRES_PASSWORD);
+
 
 @Module({
 	controllers: [AppController],

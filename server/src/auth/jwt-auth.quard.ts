@@ -10,11 +10,10 @@ export class JwtAuthGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         try {
             const req = context.switchToHttp().getRequest();
-
             const authHeader = req.headers.authorization;
                         
             if (!authHeader) {
-            throw new UnauthorizedException('Authorization header is missing');
+                throw new UnauthorizedException('Authorization header is missing');
             }
 
             const [bearer, token] = authHeader.split(' ');
@@ -25,7 +24,6 @@ export class JwtAuthGuard implements CanActivate {
 
             const user = this.jwtService.verify(token);
             req.user = user;
-            console.log('addFollowing:', typeof user.addFollowing);
 
             return true;
         } catch (error) {

@@ -8,7 +8,7 @@ import { Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 
-@Controller('posts')
+@Controller('/posts')
 export class PostsController {
     constructor(
         private readonly postsService: PostsService,
@@ -25,7 +25,7 @@ export class PostsController {
     }
 
 
-    @Get('news/:id')
+    @Get('/news/:id')
     async getNewsFeed(@Param('id') id: string) {
         const user_id = parseInt(id);
         if (Number.isNaN(user_id)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
@@ -34,7 +34,7 @@ export class PostsController {
     }
 
 
-    @Get("file/:id")
+    @Get("/file/:id")
     async getPostFile(@Param('id') id: string, @Res() res: Response) {
         const post_file_id = parseInt(id);
         if(Number.isNaN(post_file_id)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);

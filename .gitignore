@@ -3,6 +3,16 @@
 /node_modules
 /build
 
+# Сервер
+/server/node_modules/
+/server/dist/
+/server/.env
+
+# Клієнт
+/client/node_modules/
+/client/build/
+/client/.env
+
 # Logs
 logs
 *.log
