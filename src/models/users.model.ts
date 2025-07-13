@@ -1,5 +1,6 @@
-import { Model, Column, DataType, Table, BelongsToMany } from "sequelize-typescript";
+import { Model, Column, DataType, Table, BelongsToMany, HasMany } from "sequelize-typescript";
 import { Follow } from "./follow.model";
+import { Post } from "./posts.model";
 
 interface UserCreationAttrs {
 	login: string;
@@ -26,4 +27,7 @@ export class User extends Model<User, UserCreationAttrs> {
 	// Ті, хто фоловлять Мене
 	@BelongsToMany(() => User, () => Follow, 'following_id', 'follower_id')
 	followers: User[];
+		
+	@HasMany(() => Post, { as: 'posts' })
+	posts: Post[];
 }

@@ -34,16 +34,14 @@ export class PostsController {
     }
 
 
-    @Get("file/:post_file_id")
-    async getPostFile(@Param() params, @Res() res: Response) {
-        const post_file_id = parseInt(params.post_file_id);
-        
+    @Get("file/:id")
+    async getPostFile(@Param('id') id: string, @Res() res: Response) {
+        const post_file_id = parseInt(id);
         if(Number.isNaN(post_file_id)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
-        
         
         const postFile = await this.postFilesModel.findByPk(post_file_id);
         if (!postFile) {
-            throw new HttpException('Post file row not found', HttpStatus.NOT_FOUND);
+            throw new HttpException('Row not found', HttpStatus.NOT_FOUND);
         }
 
         const plainPostFile = postFile.get({ plain: true });
