@@ -25,12 +25,10 @@ export class PostsController {
     }
 
 
-    @Get('/news/:id')
-    async getNewsFeed(@Param('id') id: string) {
-        const user_id = parseInt(id);
-        if (Number.isNaN(user_id)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
-
-        return await this.postsService.getNewsFeed(user_id);
+    @UseGuards(JwtAuthGuard)
+    @Get('/news')
+    async getNewsFeed(@Req() req) {
+        return await this.postsService.getNewsFeed(req.user.id);
     }
 
 
@@ -73,7 +71,7 @@ export class PostsController {
         @Body() body: { text: string },
         @UploadedFiles() files: Array<Express.Multer.File>
     ) {
-        this.postsService.createPost({
+        return this.postsService.createPost({
             user_id: req.user.id,
             text: body.text
         }, files)

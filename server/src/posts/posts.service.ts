@@ -81,6 +81,8 @@ export class PostsService {
                     fs.writeFileSync(targetPath, file.buffer);
                 }
             }
+
+            return true;
         } catch (error) {
             console.log(error);
 

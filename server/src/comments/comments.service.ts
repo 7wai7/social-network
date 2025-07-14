@@ -60,6 +60,8 @@ export class CommentsService {
                     fs.writeFileSync(targetPath, file.buffer);
                 }
             }
+
+            return true;
         } catch (error) {
             console.log(error);
 

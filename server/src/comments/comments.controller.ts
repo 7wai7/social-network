@@ -68,7 +68,7 @@ export class CommentsController {
         const post_id = parseInt(id);
         if (Number.isNaN(post_id)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
 
-        this.commentsService.createComment({
+        return this.commentsService.createComment({
             user_id: req.user.id,
             post_id,
             text: body.text
