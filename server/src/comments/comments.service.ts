@@ -48,8 +48,10 @@ export class CommentsService {
                 fs.mkdirSync(commentDir, { recursive: true });
 
                 for (const file of files) {
-                    const [name, ext] = file.originalname.split('.');
-                    const filename = name + "_" + Math.floor(Math.random() * 1000) + `.${ext}`;
+                    const ext = path.extname(file.originalname);
+                    const base = path.basename(file.originalname, ext);
+                    const filename = `${base}_${Date.now()}${ext}`;
+                    
                     await this.commentFileModel.create({
                         comment_id: comment.id,
                         filename,
@@ -78,6 +80,19 @@ export class CommentsService {
             }
 
             throw new HttpException("Uploading error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    async deleteComment(id: number) {
+        const commentDir = path.join(__dirname, '..', '..', 'data', 'comments', `comment_${id}`);
+
+        await Promise.all([
+            this.commentModel.destroy({ where: { id } }),
+            this.commentFileModel.destroy({ where: { comment_id: id } }),
+        ]);
+
+        if (fs.existsSync(commentDir)) {
+            fs.rmSync(commentDir, { recursive: true, force: true });
         }
     }
 }

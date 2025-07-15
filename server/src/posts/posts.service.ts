@@ -69,8 +69,10 @@ export class PostsService {
                 fs.mkdirSync(postDir, { recursive: true });
 
                 for (const file of files) {
-                    const [name, ext] = file.originalname.split('.');
-                    const filename = name + "_" + Math.floor(Math.random() * 1000) + `.${ext}`;
+                    const ext = path.extname(file.originalname);
+                    const base = path.basename(file.originalname, ext);
+                    const filename = `${base}_${Date.now()}${ext}`;
+                    
                     await this.postFilesModel.create({
                         post_id: post.id,
                         filename,

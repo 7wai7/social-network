@@ -7,7 +7,6 @@ interface UserCreationAttrs {
 	email: string;
 	password: string;
 }
-console.log('Follow exists?', Follow);
 
 @Table({ tableName: 'users' })
 export class User extends Model<User, UserCreationAttrs> {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentDto } from 'src/dto/create-comment.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.quard';
@@ -73,5 +73,14 @@ export class CommentsController {
             post_id,
             text: body.text
         }, files)
+    }
+
+
+    @Delete('/:id')
+    deleteComment(@Param('id') id: string,) {
+        const id_ = parseInt(id);
+        if (Number.isNaN(id_)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
+
+        this.commentsService.deleteComment(id_);
     }
 }

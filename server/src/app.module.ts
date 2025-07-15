@@ -13,6 +13,11 @@ import { CommentsModule } from './comments/comments.module';
 import * as dotenv from 'dotenv';
 import { Comment } from './models/comments.model';
 import { CommentFile } from './models/commentFiles.model';
+import { ChatModule } from './chat/chat.module';
+import { ChatParticipants } from './models/chatParticipants.model';
+import { ChatMessages } from './models/chatMessages.model';
+import { ChatMessageFiles } from './models/chatMessageFiles.model';
+import { Chat } from './models/chat.model';
 dotenv.config();
 
 @Module({
@@ -26,7 +31,7 @@ dotenv.config();
 			username: process.env.POSTGRES_USER,
 			password: process.env.POSTGRES_PASSWORD,
 			database: process.env.POSTGRES_DB,
-			models: [Follow, User, Post, PostFile, Comment, CommentFile],
+			models: [Follow, User, Post, PostFile, Comment, CommentFile, Chat, ChatParticipants, ChatMessages, ChatMessageFiles],
 			autoLoadModels: true,
 			synchronize: true,
 		}),
@@ -34,6 +39,7 @@ dotenv.config();
 		AuthModule,
 		PostsModule,
 		CommentsModule,
+		ChatModule
 	],
 })
 export class AppModule { }
