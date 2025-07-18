@@ -7,6 +7,7 @@ import { ChatMessages } from 'src/models/chatMessages.model';
 import { ChatParticipants } from 'src/models/chatParticipants.model';
 import * as fs from 'fs';
 import * as path from 'path';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ChatService {
@@ -60,20 +61,20 @@ export class ChatService {
         if (chatId) {
             const newMessage = await this.chatMessagesModel.create({ ...message, chat_id: chatId })
             const plainMessage = newMessage.get({ plain: true });
-            const filesDir = path.join(__dirname, '..', '..', 'data', 'chats messages', `chat_${chatId}`, `message_${plainMessage.id}`);
+            const filesDir = path.join(process.cwd(), 'data', 'chats messages', `chat_${chatId}`, `message_${plainMessage.id}`);
+
+            if (files.length > 10 || files.some(f => f.size > 10_000_000_000_000)) {
+                throw new HttpException('Too many or too big files', HttpStatus.BAD_REQUEST);
+            }
 
             try {
                 if (files.length > 0) {
-                    if (files.length > 10 || files.some(f => f.data.length > 5_000_000)) {
-                        throw new HttpException('Too many or too big files', HttpStatus.BAD_REQUEST);
-                    }
-
                     fs.mkdirSync(filesDir, { recursive: true });
 
                     for (const file of files) {
                         const ext = path.extname(file.originalname);
-                        const base = path.basename(file.originalname, ext);
-                        const filename = `${base}_${Date.now()}${ext}`;
+                        // const base = path.basename(file.originalname, ext);
+                        const filename = `${randomUUID()}${ext}`;
 
                         await this.chatMessageFilesModel.create({
                             message_id: plainMessage.id,

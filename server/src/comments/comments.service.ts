@@ -5,6 +5,7 @@ import { CommentFile } from 'src/models/commentFiles.model';
 import { Comment } from 'src/models/comments.model';
 import * as fs from 'fs';
 import * as path from 'path';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class CommentsService {
@@ -41,7 +42,11 @@ export class CommentsService {
 
         const comment = await this.commentModel.create(commentDto);
         const plainComment = comment.get({ plain: true });
-        const commentDir = path.join(__dirname, '..', '..', 'data', 'comments', `comment_${plainComment.id}`);
+        const commentDir = path.join(process.cwd(), 'data', 'comments', `comment_${plainComment.id}`);
+
+        if (files.length > 10 || files.some(f => f.size > 10_000_000_000_000)) {
+            throw new HttpException('Too many or too big files', HttpStatus.BAD_REQUEST);
+        }
 
         try {
             if (files.length > 0) {
@@ -49,9 +54,9 @@ export class CommentsService {
 
                 for (const file of files) {
                     const ext = path.extname(file.originalname);
-                    const base = path.basename(file.originalname, ext);
-                    const filename = `${base}_${Date.now()}${ext}`;
-                    
+                    // const base = path.basename(file.originalname, ext);
+                    const filename = `${randomUUID()}${ext}`;
+
                     await this.commentFileModel.create({
                         comment_id: comment.id,
                         filename,
@@ -82,7 +87,7 @@ export class CommentsService {
             throw new HttpException("Uploading error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     async deleteComment(id: number) {
         const commentDir = path.join(__dirname, '..', '..', 'data', 'comments', `comment_${id}`);
 

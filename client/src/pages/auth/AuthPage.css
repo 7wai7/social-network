@@ -1,0 +1,177 @@
+#root {
+    margin: 0;
+}
+
+.auth-panel {
+    margin: auto;
+    width: 800px;
+    height: 500px;
+	box-shadow: var(--shadow);
+	border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+
+
+.circle {
+    position: absolute;
+	background: radial-gradient(circle at 30% 30%, #a8b0fd, var(--blue));
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+	box-shadow: var(--shadow);
+	transition: transform 0.3s ease;
+}
+
+.circle:hover {
+	transform: scale(1.03);
+}
+
+.circle1 {
+    width: 70%;
+    top: -30%;
+    left: -20%;
+}
+
+.circle2 {
+    width: 20%;
+    top: 60%;
+    left: 40%;
+}
+
+.circle3 {
+    width: 30%;
+    top: 60%;
+    left: -10%;
+}
+
+.circle4 {
+    width: 20%;
+    top: 80%;
+    left: 90%;
+}
+
+.welcome-title {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    color: white;
+    font-size: 40px;
+    font-weight: 600;
+    font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+}
+
+
+
+
+
+
+.auth-panel .form {
+    margin-left: 50%;
+    padding: 30px;
+    padding-right: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    height: 100%;
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+.auth-panel h2 {
+    color: white;
+    margin: 0;
+    margin-left: 10px;
+    z-index: 1000;
+}
+
+.auth-panel .input-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    margin-top: 28px;
+    position: relative;
+    z-index: 1000;
+}
+
+.auth-panel input {
+    width: 100%;
+    height: 40px;
+    padding: 0 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    outline: none;
+}
+
+.auth-panel input.error {
+    border: 2px solid red;
+}
+
+.auth-panel .message {
+    margin-top: 6px;
+    margin-left: 6px;
+    color: red;
+}
+
+.auth-panel .show-password-toggle {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.auth-panel .show-password-toggle .open-eye {
+    display: none;
+}
+
+.auth-panel .show-password-toggle .closed-eye {
+    display: block;
+}
+
+.auth-panel .show-password-toggle.show .open-eye {
+    display: block;
+}
+
+.auth-panel .show-password-toggle.show .closed-eye {
+    display: none;
+}
+
+.auth-panel .forgot-password-btn {
+    margin-top: 6px;
+    margin-right: 10px;
+    margin-left: auto;
+    font-size: small;
+    color: white;
+    z-index: 1000;
+}
+
+.auth-panel .forgot-password-btn:hover {
+    color: rgb(177, 177, 255);
+}
+
+.auth-panel .submit {
+    width: 100%;
+    height: 40px;
+    box-shadow: var(--shadow);
+    background-color: rgb(71, 71, 175);
+    color: white;
+    margin-top: 30px;
+    font-size: large;
+    border-radius: 8px;
+    z-index: 1000;
+}
+
+.auth-panel .no-account-btn {
+    color: white;
+    z-index: 1000;
+    margin-top: auto;
+    margin-left: 20px;
+    margin-bottom: 0;
+}
+
+.auth-panel .no-account-btn:hover {
+    color: rgb(177, 177, 255);
+}

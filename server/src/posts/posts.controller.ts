@@ -26,7 +26,7 @@ export class PostsController {
 
 
     @UseGuards(JwtAuthGuard)
-    @Get('/news')
+    @Get('/news/feed')
     async getNewsFeed(@Req() req) {
         return await this.postsService.getNewsFeed(req.user.id);
     }
@@ -71,6 +71,9 @@ export class PostsController {
         @Body() body: { text: string },
         @UploadedFiles() files: Array<Express.Multer.File>
     ) {
+        console.log("body", body);
+        console.log("files", files);
+        
         return this.postsService.createPost({
             user_id: req.user.id,
             text: body.text

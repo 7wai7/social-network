@@ -10,7 +10,14 @@ export class JwtAuthGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         try {
             const req = context.switchToHttp().getRequest();
-            const authHeader = req.headers.authorization;
+            const token = req.cookies['token'];
+
+            if(!token) {
+                throw new UnauthorizedException({message: "Unauthorized"})
+            }
+            
+            
+            /* const authHeader = req.headers.authorization;
                         
             if (!authHeader) {
                 throw new UnauthorizedException('Authorization header is missing');
@@ -20,7 +27,7 @@ export class JwtAuthGuard implements CanActivate {
 
             if(bearer !== "Bearer" || !token) {
                 throw new UnauthorizedException({message: "Unauthorized"})
-            }
+            } */
 
             const user = this.jwtService.verify(token);
             req.user = user;

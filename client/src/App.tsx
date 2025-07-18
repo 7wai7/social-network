@@ -1,11 +1,15 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout.tsx';
-import { useEffect } from 'react';
-/* import Feed from './pages/Feed.tsx';
-import Profile from './pages/Profile.tsx'; */
+import { useEffect, type JSX } from 'react';
+import Feed from './pages/feed/Feed.tsx';
+import Profile from './pages/profile/Profile.tsx';
+import Messages from './pages/messages/Messages.tsx';
+import Notifications from './pages/notifications/Notifications.tsx';
+import PrivateRoute from './components/PrivateRoute.tsx';
+import AuthPage from './pages/auth/AuthPage.tsx';
 
-export default function App() {
+export default function App(): JSX.Element {
 	useEffect(() => {
 		const listener = (event: Event) => {
 			const target = event.target as HTMLElement;
@@ -23,10 +27,23 @@ export default function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path="/" element={<Layout />}>
-					{/* <Route index element={<Feed />} />
-          <Route path="/profile/:id" element={<Profile />} /> */}
+				<Route path="/login" element={<AuthPage isSignup={ false } />} />
+				<Route path="/register" element={<AuthPage isSignup={ true } />} />
+
+				<Route
+					path="/"
+					element={
+						<PrivateRoute>
+							<Layout />
+						</PrivateRoute>
+					}
+				>
+					<Route index element={<Feed />} />
+					<Route path="/notifications" element={<Notifications />} />
+					<Route path="/messages" element={<Messages />} />
+					<Route path="/profile/:id" element={<Profile />} />
 				</Route>
+
 			</Routes>
 		</BrowserRouter>
 	);

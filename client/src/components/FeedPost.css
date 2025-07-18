@@ -1,0 +1,87 @@
+.post {
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.223);
+    padding: 10px;
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+}
+
+.post .avatar-side {
+    margin-right: 10px;
+}
+
+.post .avatar {
+    width: 30px;
+    height: 30px;
+}
+
+.post .content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.post .content .post-top {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.post .meta .login {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+    margin-right: 10px;
+}
+
+.post .meta .timestamp {
+    color: lightgray;
+    font-size: 14px;
+}
+
+.post .options-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50px;
+    padding: 4px;
+}
+
+.post .options-btn:hover {
+    background-color: rgba(211, 211, 211, 0.112);;
+}
+
+.post .options-btn path {
+    fill: white;
+}
+
+.post .text {
+    color: white;
+    margin-top: 20px;
+    word-wrap: break-word;
+    font-size: 16px;
+}
+
+.post .media-block {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.post .other-files {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.post .media-block img,
+.post .media-block video {
+    height: 100%;
+	object-fit: cover;
+	max-width: 100%;
+	max-height: 300px;
+	border-radius: 8px;
+}

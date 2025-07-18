@@ -7,6 +7,8 @@ import { PostFile } from 'src/models/postFile.model';
 import { User } from 'src/models/users.model';
 import * as fs from 'fs';
 import * as path from 'path';
+import { randomUUID } from 'crypto';
+import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
 
 @Injectable()
 export class PostsService {
@@ -54,32 +56,57 @@ export class PostsService {
 
     async createPost(postDto: PostDto, files: Array<Express.Multer.File> = []) {
         if (!postDto.text && files.length === 0) {
-            throw new HttpException(
-                'Post must contain either text or at least one file',
+            throw new HttpExceptionCode(
+                [
+                    {
+                        message: 'Post must contain either text or at least one file',
+                        code: 'NO_CONTENT'
+                    }
+                ],
                 HttpStatus.BAD_REQUEST
             );
         }
 
+        if (files.length > 10) {
+            throw new HttpExceptionCode(
+                [
+                    {
+                        message: 'Too many files',
+                        code: 'TOO_MANY_FILES'
+                    }
+                ], HttpStatus.BAD_REQUEST);
+        }
+
+        if (files.some(f => f.size > 10_000_000_000_000)) {
+            throw new HttpExceptionCode(
+                [
+                    {
+                        message: 'Too big files',
+                        code: 'TOO_BIG_FILES'
+                    }
+                ], HttpStatus.BAD_REQUEST);
+        }
+
         const post = await this.postsModel.create(postDto);
         const plainPost = post.get({ plain: true });
-        const postDir = path.join(__dirname, '..', '..', 'data', 'posts', `post_${plainPost.id}`);
+        const filesDir = path.join(process.cwd(), 'data', 'posts', `post_${plainPost.id}`);
 
         try {
             if (files.length > 0) {
-                fs.mkdirSync(postDir, { recursive: true });
+                fs.mkdirSync(filesDir, { recursive: true });
 
                 for (const file of files) {
                     const ext = path.extname(file.originalname);
-                    const base = path.basename(file.originalname, ext);
-                    const filename = `${base}_${Date.now()}${ext}`;
-                    
+                    // const base = path.basename(file.originalname, ext);
+                    const filename = `${randomUUID()}${ext}`;
+
                     await this.postFilesModel.create({
                         post_id: post.id,
                         filename,
                         mimetype: file.mimetype
                     });
 
-                    const targetPath = path.join(postDir, filename);
+                    const targetPath = path.join(filesDir, filename);
                     fs.writeFileSync(targetPath, file.buffer);
                 }
             }
@@ -96,11 +123,16 @@ export class PostsService {
             await post.destroy();
 
             // Видаляємо папку з файлами, якщо вона створилася
-            if (fs.existsSync(postDir)) {
-                fs.rmSync(postDir, { recursive: true, force: true });
+            if (fs.existsSync(filesDir)) {
+                fs.rmSync(filesDir, { recursive: true, force: true });
             }
 
-            throw new HttpException("Uploading error", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpExceptionCode([
+                {
+                    message: "Uploading error",
+                    code: "UPLOAD_ERROR"
+                }
+            ], HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

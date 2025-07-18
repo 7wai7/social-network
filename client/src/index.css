@@ -1,7 +1,36 @@
+body {
+	margin: 0;
+	min-width: 320px;
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	background-color: rgb(5, 5, 5);
+}
+
 #root {
-	width: 80%;
+	width: 65%;
+	margin-right: 15%;
 	display: flex;
 	min-height: 100vh;
+}
+
+:root {
+    --shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+	--light-gray-transparent: rgba(211, 211, 211, 0.112);
+	--blue: rgb(73, 73, 236);
+}
+
+.loading-page {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.loading-page span {
+	color: white;
+	font-size: 30px;
 }
 
 a {
@@ -12,15 +41,6 @@ a {
 
 a:hover {
 	color: #535bf2;
-}
-
-body {
-	margin: 0;
-	min-width: 320px;
-	min-height: 100vh;
-	display: flex;
-	justify-content: center;
-	background-color: rgb(5, 5, 5);
 }
 
 h1 {
@@ -48,7 +68,7 @@ button {
 
 
 [hidden]:where(:not([hidden='until-found'])) {
-    display: none !important;
+	display: none !important;
 }
 
 svg {
@@ -60,14 +80,52 @@ svg {
 
 main {
 	flex: 1;
-    overflow-y: auto;
+	overflow-y: auto;
+	margin-left: 230px;
+	border-left: 1px solid rgba(255, 255, 255, 0.223);
+	border-right: 1px solid rgba(255, 255, 255, 0.223);
 }
 
 .textarea-autosize {
-    display: block;
-    overflow: hidden;
-    resize: none;
-    outline: none;
-    text-align: justify;
-    white-space: pre-wrap;
+	display: block;
+	overflow: hidden;
+	resize: none;
+	outline: none;
+	text-align: justify;
+	white-space: pre-wrap;
+    box-sizing: border-box;
+}
+
+
+.dropdown-menu {
+	position: absolute;
+	background-color: black;
+	border-radius: 12px;
+	border: 1px solid rgba(255, 255, 255, 0.223);
+	padding: 10px 16px;
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+}
+
+.dropdown-menu.active {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+	transition: var(--speed) ease;
+}
+
+.dropdown-menu.inactive {
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-20px);
+	transition: var(--speed) ease;
+}
+
+.dropdown-item {
+	margin: 6px 0;
+}
+
+.dropdown-item span {
+	color: white;
 }

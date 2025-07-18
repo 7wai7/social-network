@@ -12,9 +12,9 @@ export class UsersController {
     ) { }
 
     @UseGuards(JwtAuthGuard)
-    @Get()
-    async getAll() {
-        return await this.userService.getAll();
+    @Get("/check-auth")
+    checkAuthorised() {
+        return true;
     }
 
     @Get(":id/followers")

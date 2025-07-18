@@ -1,22 +1,11 @@
 import reactLogo from '/react.svg'
 import viteLogo from '/vite.svg'
-import React, { useEffect, type JSX } from 'react';
-import { Link } from 'react-router-dom';
+import React, { type JSX } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import './LeftNavBar.css'
 
-function LeftNavBar(): JSX.Element {
-	useEffect(() => {
-		const listener = (event: Event) => {
-			const target = event.target as HTMLElement;
-			const modalPostBtn = target.closest('.post-btn');
-			if (modalPostBtn) {
-				document.getElementById("post-modal")?.removeAttribute('hidden');
-			}
-		};
-
-		document.addEventListener('click', listener);
-		return () => document.removeEventListener('click', listener);
-	}, []);
+function LeftNavBar({ postModalFun }: any): JSX.Element {
+    const location = useLocation();
 
     return (
         <>
@@ -29,7 +18,7 @@ function LeftNavBar(): JSX.Element {
                         </button>
                     </Link>
                     <Link to="/">
-                        <button className="home-btn nav-btn">
+                        <button className={`home-btn nav-btn ${location.pathname === '/' ? 'active' : ''}`}>
                             <div className="svg-icon">
                                 <svg
                                     viewBox="0 0 24 24"
@@ -42,7 +31,7 @@ function LeftNavBar(): JSX.Element {
                         </button>
                     </Link>
                     <Link to="/notifications">
-                        <button className="notifications-btn nav-btn">
+                        <button className={`notifications-btn nav-btn ${location.pathname === '/notifications' ? 'active' : ''}`}>
                             <div className="svg-icon">
                                 <svg
                                     viewBox="0 0 24 24"
@@ -55,7 +44,7 @@ function LeftNavBar(): JSX.Element {
                         </button>
                     </Link>
                     <Link to="/messages">
-                        <button className="messages-btn nav-btn">
+                        <button className={`messages-btn nav-btn ${location.pathname === '/messages' ? 'active' : ''}`}>
                             <div className="svg-icon">
                                 <svg
                                     viewBox="0 0 24 24"
@@ -67,8 +56,8 @@ function LeftNavBar(): JSX.Element {
                             <span className='nav-btn-title'>Messages</span>
                         </button>
                     </Link>
-                    <Link to="/profile">
-                        <button className="profile-btn nav-btn">
+                    <Link to="/profile/:id">
+                        <button className={`profile-btn nav-btn ${location.pathname.startsWith('/profile') ? 'active' : ''}`}>
                             <div className="svg-icon">
                                 <svg
                                     viewBox="0 0 24 24"
@@ -80,7 +69,7 @@ function LeftNavBar(): JSX.Element {
                             <span className='nav-btn-title'>Profile</span>
                         </button>
                     </Link>
-                    <button className='post-btn'>
+                    <button className='post-btn' onClick={() => postModalFun.current.open()}>
                         <span>Post</span>
                     </button>
                 </div>

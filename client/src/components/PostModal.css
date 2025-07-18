@@ -5,6 +5,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 9000;
 }
 
 .post-modal .panel {
@@ -28,6 +29,7 @@
 .post-modal .scroll-area {
     overflow-y: auto;
     box-sizing: border-box;
+    padding-right: 10px;
 }
 
 .post-modal .post-textarea {
@@ -36,11 +38,81 @@
     border: none;
     font-size: 18px;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .post-modal .media-container {
-    max-width: 70%;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+    margin-top: 20px;
+}
+
+.post-modal .other-files-container {
+    margin-top: 20px;
+	display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.post-modal .other-files-container .file-preview {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    font-size: 18px;
+}
+
+.post-modal .other-files-container .file-preview .file-icon {
+    width: 30px;
+    height: 30px;
+}
+
+.post-modal .remove-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+	background-color: rgba(211, 211, 211, 0.523);
+    border-radius: 50px;
+}
+
+.post-modal .remove-btn path {
+    fill: black;
+}
+
+.post-modal .file-preview .remove-btn {
+    position: static;
+    margin: auto;
+    margin-right: 10px;
+    background-color: unset;
+}
+
+.post-modal .file-preview .remove-btn path {
+    fill: white;
+}
+
+.post-modal .file-preview:has(.remove-btn:hover) {
+	background-color: var(--light-gray-transparent);
+}
+
+
+.post-modal .preview-img,
+.post-modal .preview-video {
+    width: 100%;
+    position: relative;
+    max-width: 300px;
+	height: auto;
+	object-fit: contain;
+	background: #000;
+}
+
+.post-modal img,
+.post-modal video {
+    width: 100%;
+	border-radius: 10px;
 }
 
 .post-modal .panel-bottom {
@@ -75,7 +147,7 @@
     fill: blue;
 }
 
-.post-modal .modal-post-btn {
+.post-modal .modal-publish-post-btn {
     height: 100%;
     padding: 0 10px;
 }
