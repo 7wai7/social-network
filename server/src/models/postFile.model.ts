@@ -3,6 +3,7 @@ import { Post } from "./posts.model";
 
 interface PostFileCreationAttrs {
 	post_id: number;
+	originalname: string;
 	filename: string;
 	mimetype: string;
 	url: string;
@@ -16,6 +17,9 @@ export class PostFile extends Model<PostFile, PostFileCreationAttrs> {
 
 	@BelongsTo(() => Post, { as: 'post' })
 	post: Post;
+
+	@Column({ type: DataType.STRING, allowNull: false })
+	originalname: string;
 
 	@Column({ type: DataType.STRING, allowNull: false })
 	filename: string;

@@ -1,4 +1,5 @@
 import type { Post } from '../types/post';
+import type { Profile } from '../types/profile';
 import api from './axios';
 
 export async function fetchRegister(
@@ -53,8 +54,26 @@ export async function fetchLogin(
 	}
 }
 
+export async function fetchMe(): Promise<{ id: string, login: string }> {
+	const response = await api.get('/api/users/me');
+	console.log(response.data);
+	return response.data;
+}
+
 export async function fetchCheckAuth(): Promise<boolean> {
 	const response = await api.get('/api/users/check-auth');
+	console.log(response.data);
+	return response.data;
+}
+
+export async function fetchProfile(login: string): Promise<Profile> {
+	const response = await api.get(`/api/users/profile/${login}`);
+	console.log(response.data);
+	return response.data;
+}
+
+export async function fetchUserPosts(login: string): Promise<Post[]> {
+	const response = await api.get(`/api/posts/user/${login}`);
 	console.log(response.data);
 	return response.data;
 }
@@ -79,6 +98,12 @@ export async function fetchFollow(id: number): Promise<boolean> {
 
 export async function fetchUnfollow(id: number): Promise<boolean> {
 	const response = await api.delete(`/api/users/follow/${id}`);
+	console.log(response.data);
+	return response.data;
+}
+
+export async function fetchDeletePost(id: number): Promise<boolean> {
+	const response = await api.delete(`/api/posts/${id}`);
 	console.log(response.data);
 	return response.data;
 }

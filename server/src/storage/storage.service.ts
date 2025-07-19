@@ -16,7 +16,7 @@ export class StorageService {
         });
     }
 
-    async uploadFile(file: Express.Multer.File): Promise<{ url: string; filename: string; mimetype: string }> {
+    async uploadFile(file: Express.Multer.File): Promise<{ url: string; filename: string }> {
         const bucket = this.storage.bucket(this.bucketName);
         const ext = path.extname(file.originalname);
         const filename = `${randomUUID()}${ext}`;
@@ -31,8 +31,7 @@ export class StorageService {
             stream.on('finish', () => {
                 resolve({
                     url: `https://storage.googleapis.com/${this.bucketName}/${filename}`,
-                    filename,
-                    mimetype: file.mimetype,
+                    filename
                 });
             });
             stream.end(file.buffer);

@@ -72,7 +72,7 @@ export class AuthService {
 
     generateToken(user: User) {
         return {
-            token: this.jwtService.sign({ id: user.id, email: user.email })
+            token: this.jwtService.sign({ id: user.id, email: user.email, login: user.login })
         };
     }
 }

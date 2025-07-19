@@ -16,7 +16,7 @@ export default function App(): JSX.Element {
 			if (target.matches && target.matches('.textarea-autosize')) {
 				const textarea = target as HTMLTextAreaElement;
 				textarea.style.height = 'auto';
-				textarea.style.height = textarea.scrollHeight/*  Math.max(200, Math.min(textarea.scrollHeight, 600)) */ + 'px';
+				textarea.style.height = textarea.scrollHeight + 'px';
 			}
 		};
 
@@ -41,7 +41,7 @@ export default function App(): JSX.Element {
 					<Route index element={<Feed />} />
 					<Route path="/notifications" element={<Notifications />} />
 					<Route path="/messages" element={<Messages />} />
-					<Route path="/profile/:id" element={<Profile />} />
+					<Route path="/profile/:login" element={<Profile />} />
 				</Route>
 
 			</Routes>

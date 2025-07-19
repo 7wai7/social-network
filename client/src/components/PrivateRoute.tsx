@@ -1,6 +1,7 @@
 import { useEffect, useState, type JSX } from "react";
-import { fetchCheckAuth } from "../services/api";
+import { fetchMe } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { setUser } from "../globals";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
 	const [checked, setChecked] = useState(false);
@@ -8,8 +9,11 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		fetchCheckAuth()
-			.then(() => setAuthenticated(true))
+		fetchMe()
+			.then((data) => {
+				setAuthenticated(true);
+				setUser(data);
+			})
 			.catch(() => navigate("/login"))
 			.finally(() => setChecked(true));
 	}, []);

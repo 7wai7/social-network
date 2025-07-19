@@ -12,9 +12,20 @@ export class UsersController {
     ) { }
 
     @UseGuards(JwtAuthGuard)
+    @Get("/me")
+    getMe(@Req() req) {
+        return req.user;
+    }
+
+    @UseGuards(JwtAuthGuard)
     @Get("/check-auth")
     checkAuthorised() {
         return true;
+    }
+
+    @Get("/profile/:login")
+    getUserProfile(@Param('login') login: string) {
+        return this.userService.getUserProfileByLogin(login);
     }
 
     @Get(":id/followers")

@@ -16,18 +16,38 @@ export class PostsService {
         private readonly storageService: StorageService
     ) { }
 
-    async getUserPosts(userId: number, offset: number = 20, limit: number = 0) {
+    async getUserPostsCount(userId: number) {
         const posts = await this.postsModel.findAll({
             where: {
                 user_id: userId
-            },
-            include: 'files'
+            }
         })
 
-        return posts;
+        return posts.length;
     }
 
-    async getNewsFeed(userId: number, offset: number = 0, limit: number = 20) {
+    async getUserPosts(userId: number, limit: number = 20, offset: number = 0) {
+        return await this.postsModel.findAll({
+            where: {
+                user_id: userId
+            },
+            include: [
+                {
+                    model: User,
+                    as: 'user'
+                },
+                {
+                    model: PostFile,
+                    as: 'files',
+                }
+            ],
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset,
+        })
+    }
+
+    async getNewsFeed(userId: number, limit: number = 20, offset: number = 0) {
         return await this.postsModel.findAll({
             include: [
                 {
@@ -80,13 +100,14 @@ export class PostsService {
 
         try {
             for (const file of files) {
-                const { url, filename, mimetype } = await this.storageService.uploadFile(file);
+                const { url, filename } = await this.storageService.uploadFile(file);
 
                 await this.postFilesModel.create({
                     post_id: plainPost.id,
+                    originalname: file.originalname,
                     filename,
+                    mimetype: file.mimetype,
                     url,
-                    mimetype,
                 });
             }
 
@@ -116,10 +137,19 @@ export class PostsService {
             }
         }
 
-        await Promise.all([
-            this.postsModel.destroy({ where: { id } }),
-            this.postFilesModel.destroy({ where: { post_id: id } }),
-        ]);
+        await this.postFilesModel.destroy({ where: { post_id: id } });
+        await this.postsModel.destroy({ where: { id } });
+
+        return true;
+    }
+
+    async deletePostByOwner(id: number, userId: number) {
+        const post = await this.postsModel.findOne({ where: { id } })
+        if (!post) throw new HttpException("Post not found", HttpStatus.NOT_FOUND);
+        const plainPost = post.get({ plain: true });
+        if (plainPost.user_id !== userId) throw new HttpException('Forbidden: not your message', HttpStatus.FORBIDDEN);
+
+        return await this.deletePost(id);
     }
 
 }

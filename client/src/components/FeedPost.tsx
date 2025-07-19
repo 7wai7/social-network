@@ -1,12 +1,13 @@
 import type { FC, JSX } from 'react';
 import './FeedPost.css';
 import type { Post } from '../types/post';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Dropdown from './Dropdown';
-import { fetchUnfollow } from '../services/api';
+import { user } from '../globals';
 
 interface FeedPostProps {
-	post: Post;
+	post: Post,
+	handleDeletePost: (postId: number) => void
 }
 
 function handlePostFiles(post: Post): JSX.Element {
@@ -15,12 +16,12 @@ function handlePostFiles(post: Post): JSX.Element {
 	const videoExts = ['mp4', 'webm', 'ogg'];
 
 	const mediaFiles = post.files.filter(file => {
-		const ext = file.filename.split('.').pop()?.toLowerCase();
+		const ext = file.originalname.split('.').pop()?.toLowerCase();
 		return ext && mediaExts.includes(ext);
 	});
 
 	const otherFiles = post.files.filter(file => {
-		const ext = file.filename.split('.').pop()?.toLowerCase();
+		const ext = file.originalname.split('.').pop()?.toLowerCase();
 		return !ext || !mediaExts.includes(ext);
 	});
 
@@ -30,17 +31,15 @@ function handlePostFiles(post: Post): JSX.Element {
 			{mediaFiles.length > 0 && (
 				<div className="media-block">
 					{mediaFiles.map((file, index) => {
-						const ext = file.filename.split('.').pop()?.toLowerCase();
-						const url = `http://localhost:3000/posts/post_${post.id}/${file.filename}`;
-
+						const ext = file.originalname.split('.').pop()?.toLowerCase();
 						if (!ext) return null;
 
 						if (ext && imageExts.includes(ext)) {
 							return (
 								<img
 									key={index}
-									src={url}
-									alt={file.filename}
+									src={file.url}
+									alt={file.originalname}
 									className="post-image"
 									onError={(e) => {
 										e.currentTarget.onerror = null; // запобігає нескінченному циклу, якщо fallback теж не знайдеться
@@ -56,7 +55,7 @@ function handlePostFiles(post: Post): JSX.Element {
 									key={index}
 									controls
 									className="post-video">
-									<source src={url} type={`video/${ext}`} />
+									<source src={file.url} type={`video/${ext}`} />
 									Ваш браузер не підтримує відео.
 								</video>
 							);
@@ -68,14 +67,12 @@ function handlePostFiles(post: Post): JSX.Element {
 			{otherFiles.length > 0 && (
 				<div className="other-files">
 					{otherFiles.map((file, index) => {
-						const url = `http://localhost:3000/posts/post_${post.id}/${file.filename}`;
-
 						// Файл іншого типу
 						return (
 							<a
 								key={index}
-								href={url}
-								download={`${file.filename}`}
+								href={file.url}
+								download={`${file.originalname}`}
 								className="file-link"
 							>
 								<div className="file-icon">
@@ -87,7 +84,7 @@ function handlePostFiles(post: Post): JSX.Element {
 										</path>
 									</svg>
 								</div>
-								<span className="file-name">{file.filename}</span>
+								<span className="file-name">{file.originalname}</span>
 							</a>
 						);
 					})}
@@ -97,28 +94,40 @@ function handlePostFiles(post: Post): JSX.Element {
 	)
 }
 
-const FeedPost: FC<FeedPostProps> = ({ post }) => {
+const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
+	const location = useLocation();
+	const isProfilePage = location.pathname.startsWith('/profile');
+
 	return (
 		<div className="post">
-			<div className='avatar-side'>
-				<Link to={`/${post.user.login}`}>
-					<img
-						src={`http://localhost:3000/avatars/${post.user.login}`}
-						alt={`${post.user.login}`}
-						className='avatar'
-						onError={(e) => {
-							e.currentTarget.onerror = null; // запобігає нескінченному циклу, якщо fallback теж не знайдеться
-							e.currentTarget.src = "/avatar-load-failed.png"; // шлях до картинки "Фото не знайдено"
-						}}
-					/>
-				</Link>
-			</div>
+			{
+				!isProfilePage && (
+					<div className='avatar-side'>
+						<Link to={`/${post.user.login}`}>
+							<img
+								src={`http://localhost:3000/avatars/${post.user.login}`}
+								alt={`${post.user.login}`}
+								className='avatar'
+								onError={(e) => {
+									e.currentTarget.onerror = null; // запобігає нескінченному циклу, якщо fallback теж не знайдеться
+									e.currentTarget.src = "/default_profile.png"; // шлях до картинки "Фото не знайдено"
+								}}
+							/>
+						</Link>
+					</div>
+				)
+			}
+
 			<div className='content'>
 				<div className='post-top'>
-					<div className='meta'>
-						<Link to={`/${post.user.login}`}>
-							<span className='login'>{post.user.login}</span>
-						</Link>
+					<div className='post-meta'>
+						{
+							!isProfilePage && (
+								<Link to={`/${post.user.login}`}>
+									<span className='login'>{post.user.login}</span>
+								</Link>
+							)
+						}
 						<span className='timestamp'>{new Date(post.createdAt).toLocaleString()}</span>
 					</div>
 					<Dropdown
@@ -129,24 +138,32 @@ const FeedPost: FC<FeedPostProps> = ({ post }) => {
 								</svg>
 							</div>
 						}
-						items={[
-							{
-								text: `Unfollow ${post.user.login}`,
-								onClick: () => {
-									console.log(`Unfollow ${post.user.login}`)
+						items={
+							isProfilePage && post.user.login === user.login
+								? [
+									{
+										text: `Delete post`,
+										onClick: () => handleDeletePost(post.id)
+									}
+								]
+								: [
+									{
+										text: `Unfollow ${post.user.login}`,
+										onClick: () => {
+											console.log(`Unfollow ${post.user.login}`)
 
-									// fetchUnfollow(post.user.id)
-									// 	.then(data => console.log(data))
-									// 	.catch(err => console.log(err))
-								}
-							},
-							{
-								text: 'Report Post',
-								onClick: () => {
-									console.log(`Report Post`)
-								}
-							},
-						]}
+											// fetchUnfollow(post.user.id)
+											// 	.catch(err => console.log(err))
+										}
+									},
+									{
+										text: 'Report Post',
+										onClick: () => {
+											console.log(`Report Post`)
+										}
+									}
+								]
+						}
 					/>
 				</div>
 				<Link to={`/${post.user.login}/${post.id}`}>

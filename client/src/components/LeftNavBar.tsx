@@ -3,6 +3,7 @@ import viteLogo from '/vite.svg'
 import React, { type JSX } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './LeftNavBar.css'
+import { user } from '../globals';
 
 function LeftNavBar({ postModalFun }: any): JSX.Element {
     const location = useLocation();
@@ -13,7 +14,7 @@ function LeftNavBar({ postModalFun }: any): JSX.Element {
                 <div className="content">
                     <Link to="/">
                         <button className="logo-btn nav-btn">
-                            <img src={viteLogo} className="logo" alt="Vite logo" style={{marginRight: "20px"}} />
+                            <img src={viteLogo} className="logo" alt="Vite logo" style={{ marginRight: "20px" }} />
                             <img src={reactLogo} className="logo react logo-spin" alt="React logo" />
                         </button>
                     </Link>
@@ -56,7 +57,7 @@ function LeftNavBar({ postModalFun }: any): JSX.Element {
                             <span className='nav-btn-title'>Messages</span>
                         </button>
                     </Link>
-                    <Link to="/profile/:id">
+                    <Link to={`/profile/${user.login}`}>
                         <button className={`profile-btn nav-btn ${location.pathname.startsWith('/profile') ? 'active' : ''}`}>
                             <div className="svg-icon">
                                 <svg

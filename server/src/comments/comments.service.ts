@@ -15,7 +15,7 @@ export class CommentsService {
     ) { }
 
 
-    async getCommentsByPostId(id: number, offset: number = 0, limit: number = 20) {
+    async getCommentsByPostId(id: number, limit: number = 20, offset: number = 0) {
         return await this.commentModel.findAll({
             where: {
                 post_id: id

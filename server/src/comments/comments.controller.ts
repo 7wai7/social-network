@@ -77,7 +77,7 @@ export class CommentsController {
 
 
     @Delete('/:id')
-    deleteComment(@Param('id') id: string,) {
+    deleteComment(@Param('id') id: string) {
         const id_ = parseInt(id);
         if (Number.isNaN(id_)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
 

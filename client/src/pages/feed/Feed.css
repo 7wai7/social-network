@@ -2,16 +2,3 @@
     width: 100%;
     height: 100%;
 }
-
-.loading {
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.loading span {
-    margin-top: 30px;
-    color: white;
-    font-size: 20px;
-}

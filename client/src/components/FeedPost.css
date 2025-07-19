@@ -33,14 +33,14 @@
     justify-content: space-between;
 }
 
-.post .meta .login {
+.post .post-meta .login {
     font-size: 20px;
     font-weight: 600;
     color: white;
     margin-right: 10px;
 }
 
-.post .meta .timestamp {
+.post .post-meta .timestamp {
     color: lightgray;
     font-size: 14px;
 }
@@ -100,6 +100,6 @@
     height: 100%;
 	object-fit: cover;
 	max-width: 100%;
-	max-height: 300px;
+	max-height: 400px;
 	border-radius: 8px;
 }
