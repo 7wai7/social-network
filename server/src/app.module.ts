@@ -19,6 +19,7 @@ import { ChatMessages } from './models/chatMessages.model';
 import { ChatMessageFiles } from './models/chatMessageFiles.model';
 import { Chat } from './models/chat.model';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { StorageModule } from './storage/storage.module';
 import * as path from 'path';
 dotenv.config();
 
@@ -28,7 +29,7 @@ dotenv.config();
 	providers: [AppService],
 	imports: [
 		ServeStaticModule.forRoot({
-			rootPath: path.resolve(__dirname, '..', '..', 'data')
+			rootPath: path.join(process.cwd(), 'data')
 		}),
 		SequelizeModule.forRoot({
 			dialect: 'postgres',
@@ -45,7 +46,8 @@ dotenv.config();
 		AuthModule,
 		PostsModule,
 		CommentsModule,
-		ChatModule
+		ChatModule,
+		StorageModule
 	],
 })
 export class AppModule { }

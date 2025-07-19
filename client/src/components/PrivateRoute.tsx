@@ -15,10 +15,13 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
 	}, []);
 
 	if (!checked) return <>
-        <div className="loading-page">
-            <span>Loading...</span>
-        </div>
-    </>;
+		<div className="loading-page">
+			<div className='loading'>
+				<div className='loader'></div>
+				<span>Loading...</span>
+			</div>
+		</div>
+	</>;
 	if (!isAuthenticated) return null;
 
 	return children;

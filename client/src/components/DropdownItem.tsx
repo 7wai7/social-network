@@ -1,10 +1,15 @@
 import type { JSX } from "react";
 
 
-export default function DropdownItem(props: { text: string }): JSX.Element {
+export default function DropdownItem(
+    props: {
+        text: string,
+        onClick: () => void
+    }
+): JSX.Element {
     return (
         <>
-            <button className="dropdown-item">
+            <button className="dropdown-item" onClick={() => props.onClick()}>
                 <span>{props.text}</span>
             </button>
         </>

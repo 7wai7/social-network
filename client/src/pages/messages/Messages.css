@@ -1,2 +1,21 @@
-.content-container {
+.chat-page {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    position: relative;
+}
+
+
+.chat-window {
+    height: 100%;
+    flex: 1;
+    border-right: 1px solid var(--light-gray-transparent);
+}
+
+
+
+
+.chat-list {
+    width: 300px;
+    height: 100%;
 }

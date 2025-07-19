@@ -71,9 +71,6 @@ export class PostsController {
         @Body() body: { text: string },
         @UploadedFiles() files: Array<Express.Multer.File>
     ) {
-        console.log("body", body);
-        console.log("files", files);
-        
         return this.postsService.createPost({
             user_id: req.user.id,
             text: body.text

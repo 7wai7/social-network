@@ -5,16 +5,15 @@ import { PostDto } from 'src/dto/create-post.dto';
 import { Post } from 'src/models/posts.model';
 import { PostFile } from 'src/models/postFile.model';
 import { User } from 'src/models/users.model';
-import * as fs from 'fs';
-import * as path from 'path';
-import { randomUUID } from 'crypto';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class PostsService {
     constructor(
         @InjectModel(Post) private postsModel: typeof Post,
-        @InjectModel(PostFile) private postFilesModel: typeof PostFile
+        @InjectModel(PostFile) private postFilesModel: typeof PostFile,
+        private readonly storageService: StorageService
     ) { }
 
     async getUserPosts(userId: number, offset: number = 20, limit: number = 0) {
@@ -57,95 +56,70 @@ export class PostsService {
     async createPost(postDto: PostDto, files: Array<Express.Multer.File> = []) {
         if (!postDto.text && files.length === 0) {
             throw new HttpExceptionCode(
-                [
-                    {
-                        message: 'Post must contain either text or at least one file',
-                        code: 'NO_CONTENT'
-                    }
-                ],
+                [{ message: 'Post must contain either text or at least one file', code: 'NO_CONTENT' }],
                 HttpStatus.BAD_REQUEST
             );
         }
 
         if (files.length > 10) {
             throw new HttpExceptionCode(
-                [
-                    {
-                        message: 'Too many files',
-                        code: 'TOO_MANY_FILES'
-                    }
-                ], HttpStatus.BAD_REQUEST);
+                [{ message: 'Too many files', code: 'TOO_MANY_FILES' }],
+                HttpStatus.BAD_REQUEST
+            );
         }
 
-        if (files.some(f => f.size > 10_000_000_000_000)) {
+        if (files.some(f => f.size > 10 * 1024 * 1024)) {
             throw new HttpExceptionCode(
-                [
-                    {
-                        message: 'Too big files',
-                        code: 'TOO_BIG_FILES'
-                    }
-                ], HttpStatus.BAD_REQUEST);
+                [{ message: 'Too big files', code: 'TOO_BIG_FILES' }],
+                HttpStatus.BAD_REQUEST
+            );
         }
 
         const post = await this.postsModel.create(postDto);
         const plainPost = post.get({ plain: true });
-        const filesDir = path.join(process.cwd(), 'data', 'posts', `post_${plainPost.id}`);
 
         try {
-            if (files.length > 0) {
-                fs.mkdirSync(filesDir, { recursive: true });
+            for (const file of files) {
+                const { url, filename, mimetype } = await this.storageService.uploadFile(file);
 
-                for (const file of files) {
-                    const ext = path.extname(file.originalname);
-                    // const base = path.basename(file.originalname, ext);
-                    const filename = `${randomUUID()}${ext}`;
-
-                    await this.postFilesModel.create({
-                        post_id: post.id,
-                        filename,
-                        mimetype: file.mimetype
-                    });
-
-                    const targetPath = path.join(filesDir, filename);
-                    fs.writeFileSync(targetPath, file.buffer);
-                }
+                await this.postFilesModel.create({
+                    post_id: plainPost.id,
+                    filename,
+                    url,
+                    mimetype,
+                });
             }
 
             return true;
         } catch (error) {
-            console.log(error);
+            console.error('File upload error:', error);
 
-            await this.postFilesModel.destroy({
-                where: {
-                    post_id: post.id
-                }
-            })
+            // Rollback
+            await this.postFilesModel.destroy({ where: { post_id: plainPost.id } });
             await post.destroy();
 
-            // Видаляємо папку з файлами, якщо вона створилася
-            if (fs.existsSync(filesDir)) {
-                fs.rmSync(filesDir, { recursive: true, force: true });
-            }
-
-            throw new HttpExceptionCode([
-                {
-                    message: "Uploading error",
-                    code: "UPLOAD_ERROR"
-                }
-            ], HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpExceptionCode(
+                [{ message: "Uploading error", code: "UPLOAD_ERROR" }],
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
     async deletePost(id: number) {
-        const postDir = path.join(__dirname, '..', '..', 'data', 'posts', `post_${id}`);
+        const files = await this.postFilesModel.findAll({ where: { post_id: id } });
+
+        for (const file of files) {
+            try {
+                await this.storageService.deleteFile(file.filename);
+            } catch (err) {
+                console.warn('Error deleting file from GCS:', err);
+            }
+        }
 
         await Promise.all([
             this.postsModel.destroy({ where: { id } }),
             this.postFilesModel.destroy({ where: { post_id: id } }),
         ]);
-
-        if (fs.existsSync(postDir)) {
-            fs.rmSync(postDir, { recursive: true, force: true });
-        }
     }
+
 }

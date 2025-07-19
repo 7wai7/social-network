@@ -5,7 +5,7 @@ import FeedPost from '../../components/FeedPost';
 import type { Post } from '../../types/post';
 
 export default function Feed(): JSX.Element {
-    const [posts, setPosts] = useState<Post[]>([]);
+	const [posts, setPosts] = useState<Post[]>([]);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -16,12 +16,15 @@ export default function Feed(): JSX.Element {
 	}, []);
 
 	return (
-		<div className="content-container">
+		<>
 			{loading ? (
-				<p>Завантаження...</p>
-			) : (
-				posts.map((post) => <FeedPost key={post.id} post={post} />)
-			)}
-		</div>
+				<div className='loading'>
+					<div className='loader'></div>
+					<span>Loading...</span>
+				</div>
+			) : <div className="content-container">
+				{posts.map((post) => <FeedPost key={post.id} post={post} />)}
+			</div>}
+		</>
 	);
 }

@@ -3,7 +3,10 @@ import DropdownItem from "./DropdownItem";
 
 interface DropdownProps {
     button: JSX.Element;
-    items: { text: string }[];
+    items: {
+        text: string,
+        onClick: () => void
+    }[];
 }
 
 const Dropdown: FC<DropdownProps> = ({ button, items }) => {
@@ -31,7 +34,7 @@ const Dropdown: FC<DropdownProps> = ({ button, items }) => {
             </button>
             <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`}>
                 {items.map((item, index) => (
-                    <DropdownItem key={index} text={item.text} />
+                    <DropdownItem key={index} text={item.text} onClick={item.onClick} />
                 ))}
             </div>
         </div>

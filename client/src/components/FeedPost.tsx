@@ -3,6 +3,7 @@ import './FeedPost.css';
 import type { Post } from '../types/post';
 import { Link } from 'react-router-dom';
 import Dropdown from './Dropdown';
+import { fetchUnfollow } from '../services/api';
 
 interface FeedPostProps {
 	post: Post;
@@ -41,13 +42,20 @@ function handlePostFiles(post: Post): JSX.Element {
 									src={url}
 									alt={file.filename}
 									className="post-image"
+									onError={(e) => {
+										e.currentTarget.onerror = null; // запобігає нескінченному циклу, якщо fallback теж не знайдеться
+										e.currentTarget.src = "/image-load-failed.svg"; // шлях до картинки "Фото не знайдено"
+									}}
 								/>
 							);
 						}
 
 						if (ext && videoExts.includes(ext)) {
 							return (
-								<video key={index} controls className="post-video">
+								<video
+									key={index}
+									controls
+									className="post-video">
 									<source src={url} type={`video/${ext}`} />
 									Ваш браузер не підтримує відео.
 								</video>
@@ -67,11 +75,19 @@ function handlePostFiles(post: Post): JSX.Element {
 							<a
 								key={index}
 								href={url}
-								target="_blank"
-								rel="noopener noreferrer"
+								download={`${file.filename}`}
 								className="file-link"
 							>
-								📎 {file.filename}
+								<div className="file-icon">
+									<svg
+										viewBox="0 0 24 24"
+										xmlns="http://www.w3.org/2000/svg">
+										<path d="M6 10h12v1H6zM3 1h12.29L21 6.709V23H3zm12 6h5v-.2L15.2 2H15zM4 22h16V8h-6V2H4zm2-7h12v-1H6zm0 4h9v-1H6z"
+											fill='#fff'>
+										</path>
+									</svg>
+								</div>
+								<span className="file-name">{file.filename}</span>
 							</a>
 						);
 					})}
@@ -86,7 +102,15 @@ const FeedPost: FC<FeedPostProps> = ({ post }) => {
 		<div className="post">
 			<div className='avatar-side'>
 				<Link to={`/${post.user.login}`}>
-					<img src={`http://localhost:3000/avatars/${post.user.login}`} alt={`${post.user.login}`} className='avatar' />
+					<img
+						src={`http://localhost:3000/avatars/${post.user.login}`}
+						alt={`${post.user.login}`}
+						className='avatar'
+						onError={(e) => {
+							e.currentTarget.onerror = null; // запобігає нескінченному циклу, якщо fallback теж не знайдеться
+							e.currentTarget.src = "/avatar-load-failed.png"; // шлях до картинки "Фото не знайдено"
+						}}
+					/>
 				</Link>
 			</div>
 			<div className='content'>
@@ -106,8 +130,22 @@ const FeedPost: FC<FeedPostProps> = ({ post }) => {
 							</div>
 						}
 						items={[
-							{ text: `Unfollow ${post.user.login}` },
-							{ text: 'Report Post' },
+							{
+								text: `Unfollow ${post.user.login}`,
+								onClick: () => {
+									console.log(`Unfollow ${post.user.login}`)
+
+									// fetchUnfollow(post.user.id)
+									// 	.then(data => console.log(data))
+									// 	.catch(err => console.log(err))
+								}
+							},
+							{
+								text: 'Report Post',
+								onClick: () => {
+									console.log(`Report Post`)
+								}
+							},
 						]}
 					/>
 				</div>

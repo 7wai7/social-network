@@ -5,6 +5,7 @@ interface PostFileCreationAttrs {
 	post_id: number;
 	filename: string;
 	mimetype: string;
+	url: string;
 }
 
 @Table({ tableName: 'post_files' })
@@ -21,4 +22,7 @@ export class PostFile extends Model<PostFile, PostFileCreationAttrs> {
 
 	@Column({ type: DataType.STRING, allowNull: false }) // наприклад, "image/jpeg"
 	mimetype: string;
+
+	@Column({ type: DataType.STRING, allowNull: false })
+	url: string;
 }

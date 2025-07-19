@@ -8,15 +8,25 @@ body {
 }
 
 #root {
-	width: 65%;
-	margin-right: 15%;
+	width: 1200px;
 	display: flex;
 	min-height: 100vh;
 }
 
+
+main {
+	flex: 1;
+	display: flex;
+	overflow-y: auto;
+	margin-left: 230px;
+	border-left: var(--border);
+	border-right: var(--border);
+}
+
 :root {
-    --shadow: 0 0 40px rgba(255, 255, 255, 0.2);
-	--light-gray-transparent: rgba(211, 211, 211, 0.112);
+	--shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+	--light-gray-transparent: rgba(255, 255, 255, 0.223);
+	--border: 1px solid var(--light-gray-transparent);
 	--blue: rgb(73, 73, 236);
 }
 
@@ -31,6 +41,7 @@ body {
 .loading-page span {
 	color: white;
 	font-size: 30px;
+	margin-top: 30px;
 }
 
 a {
@@ -66,6 +77,46 @@ button {
 	}
 }
 
+@keyframes logo-spin {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.loader {
+	width: 15px;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background-color: white;
+	color: white;
+	box-shadow: -20px 0px, 20px 0px;
+	animation: l18 1s infinite;
+}
+
+@keyframes l18 {
+	25% {
+		box-shadow: -20px -20px, 20px 20px
+	}
+
+	50% {
+		box-shadow: 0px -20px, 0px 20px
+	}
+
+	75% {
+		box-shadow: 20px -20px, -20px 20px
+	}
+
+	100% {
+		box-shadow: 20px 0px, -20px 0px
+	}
+}
+
+
+
 
 [hidden]:where(:not([hidden='until-found'])) {
 	display: none !important;
@@ -77,15 +128,6 @@ svg {
 }
 
 
-
-main {
-	flex: 1;
-	overflow-y: auto;
-	margin-left: 230px;
-	border-left: 1px solid rgba(255, 255, 255, 0.223);
-	border-right: 1px solid rgba(255, 255, 255, 0.223);
-}
-
 .textarea-autosize {
 	display: block;
 	overflow: hidden;
@@ -93,7 +135,7 @@ main {
 	outline: none;
 	text-align: justify;
 	white-space: pre-wrap;
-    box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 
@@ -106,6 +148,7 @@ main {
 	display: flex;
 	flex-direction: column;
 	align-items: start;
+	box-shadow: var(--shadow);
 }
 
 .dropdown-menu.active {

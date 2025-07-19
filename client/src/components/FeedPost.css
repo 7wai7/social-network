@@ -9,12 +9,14 @@
 }
 
 .post .avatar-side {
+    margin-top: 10px;
     margin-right: 10px;
 }
 
 .post .avatar {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
 }
 
 .post .content {
@@ -75,6 +77,22 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+.post .other-files .file-link {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.post .other-files .file-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 20px;
+}
+
+.post .other-files .file-name {
+    font-size: 16px;
 }
 
 .post .media-block img,

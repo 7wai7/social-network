@@ -6,7 +6,11 @@ import { RegisterUserDto } from 'src/dto/register-user.dto';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) { }
+    tokenAge: number;
+
+    constructor(private authService: AuthService) {
+        this.tokenAge = 1000 * 60 * 60 * 24;
+    }
 
     @Post("/login")
     async login(@Body() userDto: LoginUserDto, @Res() res: Response) {
@@ -17,7 +21,7 @@ export class AuthController {
             httpOnly: true, // Prevents client-side JavaScript access
             secure: process.env.NODE_ENV === 'production', // Use secure in production (HTTPS)
             sameSite: 'lax', // Or 'strict' or 'none' depending on your needs
-            maxAge: 3600000 // Cookie expiration in milliseconds (e.g., 1 hour)
+            maxAge: this.tokenAge // Cookie expiration in milliseconds (e.g., 1 hour)
         });
 
         return res.status(200).json({ message: 'Login successful' });
@@ -31,7 +35,7 @@ export class AuthController {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 3600000
+            maxAge: this.tokenAge
         });
 
         return res.status(200).json({ message: 'Login successful' });

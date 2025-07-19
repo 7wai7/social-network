@@ -4,8 +4,8 @@ import './Messages.css'
 export default function Messages(): JSX.Element {
     return (
         <>
-            <div className='content-container'>
-                
+            <div className='chat-window'>
+
             </div>
         </>
     )

@@ -7,6 +7,9 @@
 /server/node_modules/
 /server/dist/
 /server/.env
+# Google Cloud credentials
+/server/social-network-uploads-4fb82798ee46.json
+
 
 # Клієнт
 /client/node_modules/
