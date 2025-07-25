@@ -1,6 +1,10 @@
+import type { User } from "./types/user";
+import { formatDistanceToNow } from 'date-fns';
+import { uk } from 'date-fns/locale';
 
-export let user: { id: string, login: string }
-
-export function setUser(_user: { id: string, login: string }) {
-    user = _user;
-}
+export const timeAgo = (date: string | number | Date) => {
+  return formatDistanceToNow(new Date(date), {
+    addSuffix: true,
+    locale: uk,
+  });
+};

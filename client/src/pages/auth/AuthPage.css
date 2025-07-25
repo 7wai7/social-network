@@ -109,7 +109,7 @@
     border: 2px solid red;
 }
 
-.auth-panel .message {
+.auth-panel .error-message {
     margin-top: 6px;
     margin-left: 6px;
     color: red;

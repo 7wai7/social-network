@@ -8,7 +8,12 @@ import { JwtSocketAuthGuard } from './jwt-socket-auth.guard';
 import { AuthService } from 'src/auth/auth.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({
+	cors: {
+		origin: 'http://localhost:5173',
+		credentials: true,
+	}
+})
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(private readonly chatService: ChatService) { }
 
@@ -18,18 +23,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketAuthGuard)
 	@SubscribeMessage('join-chat')
 	async joinChat(
-		@MessageBody() data: { chatId: string },
+		@MessageBody() chatId: string,
 		@ConnectedSocket() client: Socket
 	) {
-		client.join(data.chatId);
+		console.log("join-chat", chatId);
+
+		if (chatId) {
+			client.join(chatId);
+		}
 	}
 
 	@SubscribeMessage('leave-chat')
 	async leaveChat(
-		@MessageBody() data: { chatId: string },
+		@MessageBody() chatId: string,
 		@ConnectedSocket() client: Socket
 	) {
-		client.leave(data.chatId);
+		if (chatId) client.leave(chatId);
 	}
 
 	@UseGuards(JwtSocketAuthGuard)
@@ -39,16 +48,31 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket
 	) {
 		const user = client.handshake['user'];
-		console.log(data.files);
+		console.log("data", data);
 
 		const files = data.files || [];
 		try {
-			// const message = await this.chatService.createMessage({ ...data, user_id: user.id }, files);
-			// this.server.to(String(message.chat_id)).emit('chat-message', message); // розсилка всім
+			const newMessage = { ...data, user_id: user.id };
+			console.log("newMessage", newMessage);
+			const newChatId = await this.chatService.createChatIfNotExists(newMessage);
+			console.log("newChatId", newChatId);
+
+			if (newChatId) {
+				newMessage.chat_id = newChatId;
+			}
+
+			const message = await this.chatService.createMessage(newMessage, files);
+
+			if (newChatId) {
+				client.join(String(message.chat_id)); // join не одразу додає в кімнату
+				client.emit('chat-message', message); // переслати власнику для рендеру
+				client.to(String(message.chat_id)).emit('chat-message', message); // переслати всім крім власника
+			} else
+				this.server.to(String(message.chat_id)).emit('chat-message', message); // розсилка всім
 		} catch (err) {
-			client.emit('chat-message-error', {
-				error: err?.message || 'Failed to send message',
-			});
+			console.log(err);
+
+			client.emit('chat-message-error', err);
 		}
 	}
 

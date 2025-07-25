@@ -14,7 +14,7 @@ export class AuthController {
 
     @Post("/login")
     async login(@Body() userDto: LoginUserDto, @Res() res: Response) {
-        const { token } = await this.authService.login(userDto);
+        const { token, user } = await this.authService.login(userDto);
 
         // Set the JWT as an HttpOnly cookie for security
         res.cookie('token', token, {
@@ -24,12 +24,12 @@ export class AuthController {
             maxAge: this.tokenAge // Cookie expiration in milliseconds (e.g., 1 hour)
         });
 
-        return res.status(200).json({ message: 'Login successful' });
+        return res.status(200).json(user);
     }
 
     @Post("/register")
     async register(@Body() userDto: RegisterUserDto, @Res() res: Response) {
-        const { token } = await this.authService.register(userDto);
+        const { token, user } = await this.authService.register(userDto);
 
         res.cookie('token', token, {
             httpOnly: true,
@@ -38,6 +38,11 @@ export class AuthController {
             maxAge: this.tokenAge
         });
 
-        return res.status(200).json({ message: 'Login successful' });
+        return res.status(200).json(user);
+    }
+
+    @Post("/logout")
+    logout(@Res() res: Response) {
+        this.authService.logout(res);
     }
 }

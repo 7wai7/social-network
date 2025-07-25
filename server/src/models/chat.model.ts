@@ -16,8 +16,8 @@ export class Chat extends Model<Chat, ChatCreationAttrs> {
     @Column({ type: DataType.STRING, allowNull: true })
     title: string; // для групових чатів
 
-    @BelongsToMany(() => User, () => ChatParticipants)
-    participants: User[];
+    @BelongsToMany(() => User, () => ChatParticipants, 'chat_id', 'user_id')
+    users: User[];
 
     @HasMany(() => ChatMessages)
     messages: ChatMessages[];

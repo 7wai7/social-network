@@ -1,9 +1,7 @@
+import type { User } from "./user";
+
 export interface Profile {
-	user: {
-		id: string,
-		email: string,
-		login: string
-	},
+	user: User,
     about: string,
 	bannerUrl: string,
 	avatarUrl: string,

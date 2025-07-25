@@ -1,3 +1,4 @@
+import type { User } from "./user";
 
 export interface Post {
 	id: number;
@@ -11,8 +12,5 @@ export interface Post {
 		url: string,
 		createdAt: string
 	}[]
-	user: {
-		id: number,
-		login: string
-	}
+	user: User
 }

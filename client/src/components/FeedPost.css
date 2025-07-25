@@ -76,6 +76,7 @@
 .post .other-files {
     display: flex;
     flex-direction: column;
+    align-items: start;
     gap: 6px;
 }
 
@@ -88,7 +89,7 @@
 .post .other-files .file-icon {
     width: 24px;
     height: 24px;
-    margin-right: 20px;
+    margin-right: 10px;
 }
 
 .post .other-files .file-name {

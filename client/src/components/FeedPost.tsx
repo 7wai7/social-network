@@ -3,11 +3,11 @@ import './FeedPost.css';
 import type { Post } from '../types/post';
 import { Link, useLocation } from 'react-router-dom';
 import Dropdown from './Dropdown';
-import { user } from '../globals';
+import { useUser } from '../contexts/UserContext';
 
 interface FeedPostProps {
 	post: Post,
-	handleDeletePost: (postId: number) => void
+	handleDeletePost?: (postId: number) => void | Promise<void> | null
 }
 
 function handlePostFiles(post: Post): JSX.Element {
@@ -95,6 +95,7 @@ function handlePostFiles(post: Post): JSX.Element {
 }
 
 const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
+	const { user } = useUser();
 	const location = useLocation();
 	const isProfilePage = location.pathname.startsWith('/profile');
 
@@ -139,11 +140,11 @@ const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 							</div>
 						}
 						items={
-							isProfilePage && post.user.login === user.login
+							isProfilePage && post.user.login === user?.login
 								? [
 									{
 										text: `Delete post`,
-										onClick: () => handleDeletePost(post.id)
+										onClick: () => handleDeletePost ? handleDeletePost(post.id) : {}
 									}
 								]
 								: [

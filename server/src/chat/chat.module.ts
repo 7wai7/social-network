@@ -7,7 +7,6 @@ import { ChatMessageFiles } from 'src/models/chatMessageFiles.model';
 import { Chat } from 'src/models/chat.model';
 import { ChatService } from './chat.service';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthModule } from 'src/auth/auth.module';
 import { ChatController } from './chat.controller';
 
 @Module({

@@ -1,6 +1,8 @@
 import { Model, Column, DataType, Table, BelongsToMany, HasMany } from "sequelize-typescript";
 import { Follow } from "./follow.model";
 import { Post } from "./posts.model";
+import { Chat } from "./chat.model";
+import { ChatParticipants } from "./chatParticipants.model";
 
 interface UserCreationAttrs {
 	login: string;
@@ -26,7 +28,11 @@ export class User extends Model<User, UserCreationAttrs> {
 	// Ті, хто фоловлять Мене
 	@BelongsToMany(() => User, () => Follow, 'following_id', 'follower_id')
 	followers: User[];
-		
+
 	@HasMany(() => Post, { as: 'posts' })
 	posts: Post[];
+
+	@BelongsToMany(() => Chat, () => ChatParticipants, 'user_id', 'chat_id')
+	chats: Chat[];
+
 }

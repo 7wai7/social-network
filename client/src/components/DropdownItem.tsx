@@ -4,12 +4,12 @@ import type { JSX } from "react";
 export default function DropdownItem(
     props: {
         text: string,
-        onClick: () => void
+        onClick?: () => void
     }
 ): JSX.Element {
     return (
         <>
-            <button className="dropdown-item" onClick={() => props.onClick()}>
+            <button className="dropdown-item" onClick={() => props.onClick ? props.onClick() : {}}>
                 <span>{props.text}</span>
             </button>
         </>

@@ -9,7 +9,7 @@ export class JwtSocketAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const client: Socket = context.switchToWs().getClient();
 
-    const token = client.handshake.auth?.token || client.handshake.headers?.authorization?.split(' ')[1];
+    const token = client.handshake.auth?.token || client.handshake.headers?.authorization?.split(' ')[1] || client.handshake.headers?.cookie?.split('=').pop();
     if (!token) return false;
 
     try {

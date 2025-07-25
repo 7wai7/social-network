@@ -3,9 +3,10 @@ import viteLogo from '/vite.svg'
 import React, { type JSX } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './LeftNavBar.css'
-import { user } from '../globals';
+import { useUser } from '../contexts/UserContext';
 
 function LeftNavBar({ postModalFun }: any): JSX.Element {
+    const { user } = useUser();
     const location = useLocation();
 
     return (
@@ -57,7 +58,7 @@ function LeftNavBar({ postModalFun }: any): JSX.Element {
                             <span className='nav-btn-title'>Messages</span>
                         </button>
                     </Link>
-                    <Link to={`/profile/${user.login}`}>
+                    <Link to={`/profile/${user?.login}`}>
                         <button className={`profile-btn nav-btn ${location.pathname.startsWith('/profile') ? 'active' : ''}`}>
                             <div className="svg-icon">
                                 <svg

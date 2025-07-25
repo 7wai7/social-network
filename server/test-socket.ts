@@ -4,10 +4,8 @@ import * as path from 'path';
 
 const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ1c2VyNUBnbWFpbC5jb20iLCJpYXQiOjE3NTI1NzA5NjUsImV4cCI6MTc1MjY1NzM2NX0.I9aryssHy3eK7AET9X0F92eJsfYS-IjPC477CPMXSZw`;
 
-const socket = io("http://localhost:3000", {
-    auth: {
-        token
-    }
+const socket = io({
+    withCredentials: true
 });
 
 socket.on("connect", () => {
@@ -26,9 +24,9 @@ socket.on("connect", () => {
     //     }
     // ] });
 
-    socket.emit("join-chat", {
-        chatId: 1
-    });
+    // socket.emit("join-chat", {
+    //     chatId: 1
+    // });
 
 });
 

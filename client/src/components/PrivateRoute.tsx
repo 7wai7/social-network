@@ -1,11 +1,13 @@
 import { useEffect, useState, type JSX } from "react";
 import { fetchMe } from "../services/api";
 import { useNavigate } from "react-router-dom";
-import { setUser } from "../globals";
+import type { User } from "../types/user";
+import { UserContext } from "../contexts/UserContext";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
 	const [checked, setChecked] = useState(false);
 	const [isAuthenticated, setAuthenticated] = useState(false);
+	const [user, setUser] = useState<User | null>(null);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -28,7 +30,11 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
 	</>;
 	if (!isAuthenticated) return null;
 
-	return children;
+	return (
+		<UserContext.Provider value={{ user, setUser }}>
+			{children}
+		</UserContext.Provider>
+	);
 }
 
 export default PrivateRoute;

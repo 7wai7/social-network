@@ -41,6 +41,7 @@ dotenv.config();
 			models: [Follow, User, Post, PostFile, Comment, CommentFile, Chat, ChatParticipants, ChatMessages, ChatMessageFiles],
 			autoLoadModels: true,
 			synchronize: true,
+			logging: false
 		}),
 		UsersModule,
 		AuthModule,

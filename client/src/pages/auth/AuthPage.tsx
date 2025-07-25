@@ -2,9 +2,11 @@ import { useRef, type JSX } from "react";
 import "./AuthPage.css"
 import { Link, useNavigate } from "react-router-dom";
 import { fetchLogin, fetchRegister } from "../../services/api";
+import { useUser } from "../../contexts/UserContext";
 
 export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Element {
-	const navigate = useNavigate();
+	const { setUser } = useUser()
+    const navigate = useNavigate();
     type Field = 'login' | 'email' | 'password';
 
     const inputRefs = {
@@ -66,6 +68,7 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
         });
     }
 
+
     const submit = () => {
         hideErrors();
 
@@ -77,8 +80,12 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
             }
 
             fetchRegister(body)
-                .then(() => navigate("/"))
-                .catch((err) => err.errors ? showErrors(err.errors) : console.log(err))
+                .then((data) => {
+                    console.log(data);
+                    setUser(data);
+                    navigate("/");
+                })
+                .catch((errors) => Array.isArray(errors) ? showErrors(errors) : console.log(errors))
         } else {
             const body = {
                 email: getRefValue(inputRefs.email),
@@ -86,8 +93,12 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
             }
 
             fetchLogin(body)
-                .then(() => navigate("/"))
-                .catch((err) => err.errors ? showErrors(err.errors) : console.log(err))
+                .then((data) => {
+                    console.log(data);
+                    setUser(data);
+                    navigate("/");
+                })
+                .catch((errors) => Array.isArray(errors) ? showErrors(errors) : console.log(errors))
         }
     }
 
@@ -109,13 +120,13 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
                         isSignup
                             ? <div className="input-wrapper">
                                 <input type="text" placeholder="login" className="login-input" ref={inputRefs.login} />
-                                <span className="message" hidden ref={messageRefs.login}>message</span>
+                                <span className="error-message" hidden ref={messageRefs.login}>message</span>
                             </div>
                             : ''
                     }
                     <div className="input-wrapper">
                         <input type="email" placeholder="email" className="email-input" ref={inputRefs.email} />
-                        <span className="message" hidden ref={messageRefs.email}>message</span>
+                        <span className="error-message" hidden ref={messageRefs.email}>message</span>
                     </div>
                     <div className="input-wrapper">
                         <input type="password" placeholder="password" className="password-input" ref={inputRefs.password} />
@@ -147,7 +158,7 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
                                 </svg>
                             </div>
                         </button>
-                        <span className="message" hidden ref={messageRefs.password}>message</span>
+                        <span className="error-message" hidden ref={messageRefs.password}>message</span>
                     </div>
                     {
                         !isSignup ? <button className="forgot-password-btn">Forgot password?</button> : ''

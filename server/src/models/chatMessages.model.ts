@@ -19,7 +19,7 @@ export class ChatMessages extends Model<ChatMessages, ChatMessagesCreationAttrs>
 	@Column({ type: DataType.INTEGER, allowNull: false })
 	chat_id: number;
 
-	@Column({ type: DataType.STRING, allowNull: true })
+	@Column({ type: DataType.TEXT, allowNull: true })
 	text: string;
 
 

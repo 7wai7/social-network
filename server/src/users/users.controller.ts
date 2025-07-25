@@ -23,6 +23,12 @@ export class UsersController {
         return true;
     }
 
+    @UseGuards(JwtAuthGuard)
+    @Get("/find/:login")
+    findUsers(@Param('login') login: string, @Req() req) {
+        return this.userService.findUsersByLogin(req.user.id, login);
+    }
+
     @Get("/profile/:login")
     getUserProfile(@Param('login') login: string) {
         return this.userService.getUserProfileByLogin(login);

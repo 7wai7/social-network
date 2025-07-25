@@ -2,9 +2,9 @@ import { useEffect, useState, type JSX } from 'react';
 import './Profile.css'
 import type { Profile } from '../../types/profile';
 import type { Post } from '../../types/post';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import FeedPost from '../../components/FeedPost';
-import { fetchDeletePost, fetchProfile, fetchUserPosts } from '../../services/api';
+import { fetchDeletePost, fetchLogout, fetchProfile, fetchUserPosts } from '../../services/api';
 
 export default function Profile(): JSX.Element {
     const [loadingProfile, setLoadingProfile] = useState(true);
@@ -12,10 +12,9 @@ export default function Profile(): JSX.Element {
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [posts, setPosts] = useState<Post[]>([]);
     const location = useLocation();
+	const navigate = useNavigate();
 
     useEffect(() => {
-        console.log(location.pathname.split('/')[2]);
-
         fetchProfile(location.pathname.split('/')[2]) // получити логін із url
             .then(data => {
                 setProfile(data);
@@ -74,6 +73,16 @@ export default function Profile(): JSX.Element {
                         />
                     </div>
                     <div className='meta'>
+                        <button
+                            className='logout-btn'
+                            onClick={() => {
+                                fetchLogout()
+                                    .then(() => navigate('/login'))
+                                    .catch(err => console.log(err))
+                            }}
+                        >
+                            <span>Log out</span>
+                        </button>
                         <span className='login'>{profile?.user.login}</span>
                         <span className='posts-number'>{profile?.postsNumber} posts</span>
                         <div className='follow-data'>

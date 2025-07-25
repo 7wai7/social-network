@@ -6,6 +6,7 @@ import * as bcrypt from 'bcryptjs';
 import { LoginUserDto } from 'src/dto/login-user.dto';
 import { RegisterUserDto } from 'src/dto/register-user.dto';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -43,8 +44,8 @@ export class AuthService {
     }
 
     async register(userDto: RegisterUserDto) {
-        const existedLogin = await this.userService.getUserByEmail(userDto.login);
-        if (!existedLogin) {
+        const existedLogin = await this.userService.getUserByLogin(userDto.login);
+        if (existedLogin) {
             throw new HttpExceptionCode([
                 {
                     field: 'login',
@@ -67,12 +68,19 @@ export class AuthService {
 
         const hash = await bcrypt.hash(userDto.password, 5);
         const user = await this.userService.create({ ...userDto, password: hash });
-        return this.generateToken(user);
+        return this.generateToken(user.get({ plain: true }));
+    }
+    
+    logout(res: Response) {
+        res.clearCookie('token');
+        res.end();
     }
 
     generateToken(user: User) {
+        const userData = { id: user.id, email: user.email, login: user.login };
         return {
-            token: this.jwtService.sign({ id: user.id, email: user.email, login: user.login })
+            token: this.jwtService.sign(userData),
+            user: userData
         };
     }
 }

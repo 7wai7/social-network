@@ -150,7 +150,7 @@ const PostModal = ({ postModalFun }: any) => {
                         </button>
                     </div>
                     <div className="scroll-area">
-                        <textarea name="post" id="post-textarea" className="post-textarea textarea-autosize" placeholder="Write a post" ref={postTextareaRef}></textarea>
+                        <textarea name="post" className="post-textarea textarea-autosize" placeholder="Write a post" ref={postTextareaRef}></textarea>
                         <div className="media-container" ref={mediaContainerRef}>
                             {mediaElements}
                         </div>

@@ -5,7 +5,7 @@ interface DropdownProps {
     button: JSX.Element;
     items: {
         text: string,
-        onClick: () => void
+        onClick?: () => void
     }[];
 }
 

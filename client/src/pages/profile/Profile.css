@@ -30,6 +30,18 @@
     gap: 6px;
     font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
     font-size: 14px;
+    position: relative;
+}
+
+.profile-block .logout-btn {
+    position: absolute;
+    top: -50px;
+    right: 30px;
+    color: white;
+}
+
+.profile-block .logout-btn:hover {
+    box-shadow: 0 4px 2px -2px rgba(255, 255, 255, 0.2);
 }
 
 .profile-block .meta .login {

@@ -1,8 +1,8 @@
 import { useEffect, useState, type JSX } from 'react';
 import './Feed.css'
 import { fetchFeed } from '../../services/api';
-import FeedPost from '../../components/FeedPost';
 import type { Post } from '../../types/post';
+import FeedPost from '../../components/FeedPost';
 
 export default function Feed(): JSX.Element {
 	const [posts, setPosts] = useState<Post[]>([]);

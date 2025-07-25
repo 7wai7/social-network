@@ -1,6 +1,6 @@
 import { Body, HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { UniqueConstraintError } from 'sequelize';
+import { Op, UniqueConstraintError } from 'sequelize';
 import { RegisterUserDto } from 'src/dto/register-user.dto';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
 import { Follow } from 'src/models/follow.model';
@@ -35,6 +35,19 @@ export class UsersService {
     async getAll() {
         const users = await this.userModel.findAll();
         return users;
+    }
+
+    async findUsersByLogin(userId: number, login: string) {
+        return await this.userModel.findAll({
+            where: {
+                id: {
+                    [Op.ne]: userId
+                },
+                login: {
+                    [Op.iLike]: `%${login}%`
+                }
+            }
+        })
     }
 
     async getUserProfileByLogin(login: string) {

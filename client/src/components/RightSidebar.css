@@ -2,12 +2,80 @@
 	width: 300px;
 	height: 100%;
     overflow-y: auto;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
-.right-sidebar.messages {
+.right-sidebar.messenger {
     border-right: var(--border);
 }
 
-.chat-list {
 
+
+
+.no-chats-title {
+    color: white;
+    margin: auto;
+}
+
+.right-sidebar .search-block {
+    position: fixed;
+    width: 300px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    box-sizing: border-box;
+    border-bottom: var(--border);
+    z-index: 1000;
+}
+
+.right-sidebar .search-input {
+    background-color: unset;
+    border: none;
+    outline: none;
+    flex: 1;
+    color: white;
+    font-size: 16px;
+}
+
+.right-sidebar .search-btn {
+    width: 20px;
+    height: 20px;
+    margin: 4px;
+}
+
+
+
+.right-sidebar .scroll-area {
+    margin-top: 44px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.chat-list {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.chat-list .chat-item {
+    color: #fff;
+    font-size: large;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.chat-item.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
 }
