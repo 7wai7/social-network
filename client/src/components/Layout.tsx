@@ -3,7 +3,7 @@ import LeftNavBar from './LeftNavBar.tsx';
 import PostModal, { type PostModalFun } from './PostModal.tsx';
 import { useEffect, useRef, useState, type JSX } from 'react';
 import RightSidebar from './RightSidebar.tsx';
-import connectSocket from '../services/socket.ts';
+import { connectSocket } from '../services/socket.ts';
 import type { Chat } from '../types/chat.ts';
 
 export default function Layout(): JSX.Element {
@@ -16,6 +16,8 @@ export default function Layout(): JSX.Element {
 
     useEffect(() => {
         const socket = connectSocket();
+        console.log("socket", socket);
+
 
         const connect = () => {
             console.log("✅ Connected to server with id:", socket.id);
@@ -55,7 +57,6 @@ export default function Layout(): JSX.Element {
                 />
             </main>
             <RightSidebar
-                selectedChat={selectedChat}
                 setSelectedChat={setSelectedChat}
             />
         </>

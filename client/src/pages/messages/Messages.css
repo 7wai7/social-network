@@ -83,6 +83,7 @@
     width: 100%;
     display: flex;
     flex-direction: row;
+    align-items: start;
     margin-bottom: 20px;
 }
 
@@ -104,11 +105,16 @@
     width: 100%;
 }
 
-.send-messages-btn {
-    align-self: flex-start;
-    margin: 5px;
+.message-textarea-wrapper .attach-file-btn,
+.message-textarea-wrapper .send-messages-btn {
+    margin: 6px;
     width: 24px;
     height: 24px;
+}
+
+.message-textarea-wrapper .attach-file-btn:hover path,
+.message-textarea-wrapper .send-messages-btn:hover path {
+    fill: var(--blue);
 }
 
 

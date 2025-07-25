@@ -14,6 +14,8 @@ export class JwtSocketAuthGuard implements CanActivate {
 
     try {
       const user = this.jwtService.verify(token);
+      console.log("verify user", user);
+      
       client.handshake['user'] = user;
       return true;
     } catch (e) {

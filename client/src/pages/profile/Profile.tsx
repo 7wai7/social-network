@@ -2,20 +2,21 @@ import { useEffect, useState, type JSX } from 'react';
 import './Profile.css'
 import type { Profile } from '../../types/profile';
 import type { Post } from '../../types/post';
-import { useLocation, useNavigate } from 'react-router-dom';
 import FeedPost from '../../components/FeedPost';
-import { fetchDeletePost, fetchLogout, fetchProfile, fetchUserPosts } from '../../services/api';
+import { fetchDeletePost, fetchProfile, fetchUserPosts } from '../../services/api';
+import { useUser } from '../../contexts/UserContext';
 
 export default function Profile(): JSX.Element {
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [profile, setProfile] = useState<Profile>();
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [posts, setPosts] = useState<Post[]>([]);
-    const location = useLocation();
-	const navigate = useNavigate();
+	const { user, logout } = useUser()
 
     useEffect(() => {
-        fetchProfile(location.pathname.split('/')[2]) // получити логін із url
+        if(!user) return;
+
+        fetchProfile(user.login)
             .then(data => {
                 setProfile(data);
                 setLoadingProfile(false);
@@ -23,7 +24,7 @@ export default function Profile(): JSX.Element {
             .catch((error) => console.error('Помилка при завантаженні профілю:', error))
 
 
-        fetchUserPosts(location.pathname.split('/')[2])
+        fetchUserPosts(user.login)
             .then(data => {
                 setPosts(data);
                 setLoadingPosts(false)
@@ -75,11 +76,7 @@ export default function Profile(): JSX.Element {
                     <div className='meta'>
                         <button
                             className='logout-btn'
-                            onClick={() => {
-                                fetchLogout()
-                                    .then(() => navigate('/login'))
-                                    .catch(err => console.log(err))
-                            }}
+                            onClick={() => logout()}
                         >
                             <span>Log out</span>
                         </button>

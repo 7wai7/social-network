@@ -26,6 +26,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@MessageBody() chatId: string,
 		@ConnectedSocket() client: Socket
 	) {
+		const user = client.handshake['user'];
+		console.log("join-chat user", user);
 		console.log("join-chat", chatId);
 
 		if (chatId) {
@@ -48,27 +50,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket
 	) {
 		const user = client.handshake['user'];
-		console.log("data", data);
+		console.log("chat-message user", user);
+		
+		console.log("chat-message data", data);
 
 		const files = data.files || [];
 		try {
 			const newMessage = { ...data, user_id: user.id };
-			console.log("newMessage", newMessage);
-			const newChatId = await this.chatService.createChatIfNotExists(newMessage);
-			console.log("newChatId", newChatId);
+			console.log("chat-message newMessage", newMessage);
 
-			if (newChatId) {
-				newMessage.chat_id = newChatId;
-			}
+			// const newChatId = await this.chatService.createChatIfNotExists(newMessage);
+			// console.log("newChatId", newChatId);
 
-			const message = await this.chatService.createMessage(newMessage, files);
+			// if (newChatId) {
+			// 	newMessage.chat_id = newChatId;
+			// }
 
-			if (newChatId) {
-				client.join(String(message.chat_id)); // join не одразу додає в кімнату
-				client.emit('chat-message', message); // переслати власнику для рендеру
-				client.to(String(message.chat_id)).emit('chat-message', message); // переслати всім крім власника
-			} else
-				this.server.to(String(message.chat_id)).emit('chat-message', message); // розсилка всім
+			// const message = await this.chatService.createMessage(newMessage, files);
+
+			// if (newChatId) {
+			// 	client.join(String(message.chat_id)); // join не одразу додає в кімнату
+			// 	client.emit('chat-message', message); // переслати власнику для рендеру
+			// 	client.to(String(message.chat_id)).emit('chat-message', message); // переслати всім крім власника
+			// } else
+			// 	this.server.to(String(message.chat_id)).emit('chat-message', message); // розсилка всім
 		} catch (err) {
 			console.log(err);
 

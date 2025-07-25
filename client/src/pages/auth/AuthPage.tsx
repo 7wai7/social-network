@@ -5,7 +5,7 @@ import { fetchLogin, fetchRegister } from "../../services/api";
 import { useUser } from "../../contexts/UserContext";
 
 export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Element {
-	const { setUser } = useUser()
+    const { setUser } = useUser()
     const navigate = useNavigate();
     type Field = 'login' | 'email' | 'password';
 

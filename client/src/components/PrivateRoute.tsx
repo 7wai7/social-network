@@ -1,8 +1,9 @@
 import { useEffect, useState, type JSX } from "react";
-import { fetchMe } from "../services/api";
+import { fetchLogout, fetchMe } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import type { User } from "../types/user";
 import { UserContext } from "../contexts/UserContext";
+import { getSocket } from "../services/socket";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
 	const [checked, setChecked] = useState(false);
@@ -15,8 +16,12 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
 			.then((data) => {
 				setAuthenticated(true);
 				setUser(data);
+				getSocket()?.connect();
 			})
-			.catch(() => navigate("/login"))
+			.catch(() => {
+				getSocket()?.disconnect();
+				navigate("/login")
+			})
 			.finally(() => setChecked(true));
 	}, []);
 
@@ -31,7 +36,16 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
 	if (!isAuthenticated) return null;
 
 	return (
-		<UserContext.Provider value={{ user, setUser }}>
+		<UserContext.Provider value={{
+			user, setUser, logout: () => {
+				fetchLogout()
+					.then(() => {
+						getSocket()?.disconnect();
+						navigate('/login')
+					})
+					.catch(err => console.log(err))
+			},
+		}}>
 			{children}
 		</UserContext.Provider>
 	);

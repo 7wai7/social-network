@@ -10,7 +10,7 @@ export class ChatController {
     @Get()
     @UseGuards(JwtAuthGuard)
     getUserChats(@Req() req) {
-        console.log(req.user.id);
+        console.log("getUserChats", req.user.id);
         
         return this.chatService.getUserChats(req.user.id);
     }
@@ -18,9 +18,7 @@ export class ChatController {
     @Get("/find")
     @UseGuards(JwtAuthGuard)
     GetUsersAndChatsByLogin(@Req() req, @Query() query) {
-        console.log(req.user.id);
-        console.log("query", query);
-        
+        console.log("GetUsersAndChatsByLogin", req.user.id);
         return this.chatService.findUsersAndChatsByLogin(req.user.id, query.login);
     }
 

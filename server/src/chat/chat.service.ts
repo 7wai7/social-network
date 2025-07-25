@@ -83,7 +83,7 @@ export class ChatService {
             ORDER BY u.login
             `)
 
-        console.log(chats[0]);
+        // console.log(chats[0]);
         return chats[0]
     }
 
