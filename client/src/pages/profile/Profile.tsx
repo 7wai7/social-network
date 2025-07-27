@@ -1,36 +1,39 @@
 import { useEffect, useState, type JSX } from 'react';
-import './Profile.css'
 import type { Profile } from '../../types/profile';
 import type { Post } from '../../types/post';
-import FeedPost from '../../components/FeedPost';
 import { fetchDeletePost, fetchProfile, fetchUserPosts } from '../../services/api';
+import ProfileUI from '../../ui/ProfileUI';
+import { useParams } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
 
 export default function Profile(): JSX.Element {
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [profile, setProfile] = useState<Profile>();
+    const [isOwnProfile, setIsOwnProfile] = useState(false);
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [posts, setPosts] = useState<Post[]>([]);
-	const { user, logout } = useUser()
+    const { login } = useParams();
+    const { user } = useUser();
 
     useEffect(() => {
-        if(!user) return;
+        if (!login) return;
 
-        fetchProfile(user.login)
+        fetchProfile(login)
             .then(data => {
                 setProfile(data);
+                setIsOwnProfile(data.user.id === user?.id);
                 setLoadingProfile(false);
             })
             .catch((error) => console.error('Помилка при завантаженні профілю:', error))
 
 
-        fetchUserPosts(user.login)
+        fetchUserPosts(login)
             .then(data => {
                 setPosts(data);
                 setLoadingPosts(false)
             })
             .catch((error) => console.error('Помилка при завантаженні постів:', error))
-    }, []);
+    }, [login]);
 
     const handleDeletePost = async (postId: number) => {
         try {
@@ -44,70 +47,12 @@ export default function Profile(): JSX.Element {
         }
     };
 
-    return (
-        <>
-            {loadingProfile ? (
-                <div className='loading'>
-                    <div className='loader'></div>
-                    <span>Loading...</span>
-                </div>
-            ) : (
-                <div className='profile-block'>
-                    <img
-                        src={`${profile?.bannerUrl}`}
-                        alt="banner"
-                        className='banner'
-                        onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = "/default_profile.png";
-                        }}
-                    />
-                    <div className='profile-avatar-wrapper'>
-                        <img
-                            src={`${profile?.avatarUrl}`}
-                            alt="avatar"
-                            className='avatar'
-                            onError={(e) => {
-                                e.currentTarget.onerror = null;
-                                e.currentTarget.src = "/default_profile.png";
-                            }}
-                        />
-                    </div>
-                    <div className='meta'>
-                        <button
-                            className='logout-btn'
-                            onClick={() => logout()}
-                        >
-                            <span>Log out</span>
-                        </button>
-                        <span className='login'>{profile?.user.login}</span>
-                        <span className='posts-number'>{profile?.postsNumber} posts</span>
-                        <div className='follow-data'>
-                            <span className='number'>{profile?.following || 0}</span>
-                            <span className='text'>following</span>
-                            <span className='number'>{profile?.followers || 0}</span>
-                            <span className='text'>followers</span>
-                        </div>
-                        {profile?.about && (
-                            <div className='about'>
-                                <span className='about-text'>{profile?.about}</span>
-                                <button className='show-more-btn'>Show more</button>
-                            </div>
-                        )}
-                    </div>
-                    <h2 className='posts-top'>Posts</h2>
-                    <div className='h-line'></div>
-                    {loadingPosts ? (
-                        <div className='loading'>
-                            <div className='loader'></div>
-                        </div>
-                    ) : (
-                        <div className='profile-posts-container'>
-                            {posts.map((post) => <FeedPost key={post.id} post={post} handleDeletePost={handleDeletePost} />)}
-                        </div>
-                    )}
-                </div>
-            )}
-        </>
-    )
+    return <ProfileUI
+        loadingProfile={loadingProfile}
+        profile={profile}
+        isOwnProfile={isOwnProfile}
+        loadingPosts={loadingPosts}
+        posts={posts}
+        handleDeletePost={handleDeletePost}
+    />
 }

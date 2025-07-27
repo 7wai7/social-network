@@ -1,9 +1,10 @@
+import type { Chat } from "./chat";
 import type { User } from "./user";
 
 export interface Message {
     id: number,
     text: string,
     createdAt: string,
-	avatarUrl: string,
-    user: User
+    user: User,
+    chat?: Chat
 }

@@ -59,21 +59,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const newMessage = { ...data, user_id: user.id };
 			console.log("chat-message newMessage", newMessage);
 
-			// const newChatId = await this.chatService.createChatIfNotExists(newMessage);
-			// console.log("newChatId", newChatId);
+			const newChatId = await this.chatService.createChatIfNotExists(newMessage);
+			console.log("newChatId", newChatId);
 
-			// if (newChatId) {
-			// 	newMessage.chat_id = newChatId;
-			// }
+			if (newChatId) {
+				newMessage.chat_id = newChatId;
+			}
 
-			// const message = await this.chatService.createMessage(newMessage, files);
+			const message = await this.chatService.createMessage(newMessage, files);
 
-			// if (newChatId) {
-			// 	client.join(String(message.chat_id)); // join не одразу додає в кімнату
-			// 	client.emit('chat-message', message); // переслати власнику для рендеру
-			// 	client.to(String(message.chat_id)).emit('chat-message', message); // переслати всім крім власника
-			// } else
-			// 	this.server.to(String(message.chat_id)).emit('chat-message', message); // розсилка всім
+			if (newChatId) {
+				client.join(String(message.chat_id)); // join не одразу додає в кімнату
+				client.emit('chat-message', message); // переслати власнику для рендеру
+				client.to(String(message.chat_id)).emit('chat-message', message); // переслати всім крім власника
+			} else
+				this.server.to(String(message.chat_id)).emit('chat-message', message); // розсилка всім
 		} catch (err) {
 			console.log(err);
 

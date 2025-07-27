@@ -1,7 +1,7 @@
 
 .chat-window {
     width: 100%;
-	max-height: 100vh;
+	max-height: calc(100vh - 50px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -9,7 +9,7 @@
 }
 
 
-.chat-title {
+.chat-window .chat-title {
     align-self: flex-start;
     color: white;
     font-family: var(--arial-font);
@@ -42,10 +42,10 @@
 }
 
 .message {
-    width: max-content;
+    align-self: flex-start;
     max-width: 60%;
     padding: 5px 10px;
-    background-color: rgb(35, 35, 35);
+    background-color: var(--block-background);
     border-radius: 12px;
     border-bottom-left-radius: 0;
 }
@@ -58,9 +58,9 @@
 }
 
 .message.own-message {
-    align-self: flex-end;
-    align-items: end;
     display: flex;
+    align-items: end;
+    align-self: flex-end;
     flex-direction: column;
     border-bottom-left-radius: 12px;
     border-bottom-right-radius: 0;
@@ -84,7 +84,6 @@
     display: flex;
     flex-direction: row;
     align-items: start;
-    margin-bottom: 20px;
 }
 
 .chat-window .message-textarea-wrapper .scroll-block {
@@ -114,7 +113,7 @@
 
 .message-textarea-wrapper .attach-file-btn:hover path,
 .message-textarea-wrapper .send-messages-btn:hover path {
-    fill: var(--blue);
+    fill: var(--accent);
 }
 
 

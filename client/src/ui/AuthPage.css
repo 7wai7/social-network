@@ -16,7 +16,7 @@
 
 .circle {
     position: absolute;
-	background: radial-gradient(circle at 30% 30%, #a8b0fd, var(--blue));
+	background: radial-gradient(circle at 30% 30%, #a8b0fd, var(--accent));
     border-radius: 50%;
     aspect-ratio: 1 / 1;
 	box-shadow: var(--shadow);

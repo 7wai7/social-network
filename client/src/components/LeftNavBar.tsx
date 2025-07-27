@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import './LeftNavBar.css'
 import { useUser } from '../contexts/UserContext';
 
-function LeftNavBar({ postModalFun }: any): JSX.Element {
+function LeftNavBar(): JSX.Element {
     const { user } = useUser();
     const location = useLocation();
 
@@ -71,9 +71,6 @@ function LeftNavBar({ postModalFun }: any): JSX.Element {
                             <span className='nav-btn-title'>Profile</span>
                         </button>
                     </Link>
-                    <button className='post-btn' onClick={() => postModalFun.current.open()}>
-                        <span>Post</span>
-                    </button>
                 </div>
             </div>
         </>

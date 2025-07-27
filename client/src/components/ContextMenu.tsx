@@ -1,4 +1,4 @@
-import { useState, type JSX } from "react";
+import { type JSX } from "react";
 
 export const ContextMenu = ({ x, y, visible, buttons }: { x: number, y: number, visible: boolean, buttons: JSX.Element }): JSX.Element => {
 

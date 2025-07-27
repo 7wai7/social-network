@@ -4,21 +4,23 @@ body {
 	min-height: 100vh;
 	display: flex;
 	justify-content: center;
-	background-color: rgb(5, 5, 5);
+	background-color: var(--background);
 }
 
 #root {
 	width: 1200px;
 	display: flex;
 	min-height: 100vh;
+	box-sizing: border-box;
 }
 
 
 main {
 	flex: 1;
 	display: flex;
-	overflow-y: auto;
 	margin-left: 240px;
+	padding-bottom: 50px;
+	box-sizing: border-box;
 	border-left: var(--border);
 	border-right: var(--border);
 }
@@ -27,8 +29,12 @@ main {
 	--shadow: 0 0 40px rgba(255, 255, 255, 0.2);
 	--light-gray-transparent: rgba(255, 255, 255, 0.223);
 	--border: 1px solid var(--light-gray-transparent);
-	--blue: rgb(73, 73, 236);
     --arial-font: Arial, Helvetica Neue, Helvetica, sans-serif;
+	--text: #E0E0E0;
+	--secondary-text: #A0A0A0;
+	--background: #121212;
+	--block-background: #1E1E1E;
+	--accent: #00c3ffb9;
 	--dropdown-speed: .1s
 }
 
@@ -156,7 +162,7 @@ svg {
 
 .dropdown-menu {
 	position: absolute;
-	background-color: black;
+	background-color: var(--background);
 	border-radius: 12px;
 	border: 1px solid rgba(255, 255, 255, 0.223);
 	padding: 10px 16px;
@@ -192,7 +198,7 @@ svg {
 
 
 .context-menu {
-	background-color: black;
+	background-color: var(--background);
 	box-shadow: var(--shadow);
 	display: flex;
 	flex-direction: column;
@@ -201,6 +207,7 @@ svg {
 	padding: 6px 0;
 }
 
+.context-menu a,
 .context-menu button {
 	color: white;
 	padding: 6px 12px;
@@ -209,6 +216,7 @@ svg {
 	align-items: start;
 }
 
+.context-menu a:not(:first-child),
 .context-menu button:not(:first-child) {
 	border-top: var(--border);
 }

@@ -6,22 +6,24 @@ import type { Chat } from "../types/chat";
 import MessengerChatsSidebar from "./MessengerChatsSidebar";
 
 const RightSidebar = (
-    {
-        setSelectedChat
-    }: { setSelectedChat: React.Dispatch<React.SetStateAction<Chat | null>>; }
+    props: {
+        setSelectedChat: React.Dispatch<React.SetStateAction<Chat | null>>,
+        handleContextMenu: (e: { preventDefault: () => void; pageX: any; pageY: any; }, callback: (setMenuButtons: React.Dispatch<React.SetStateAction<JSX.Element>>) => void) => void,
+    }
 ): JSX.Element => {
     const location = useLocation();
 
     if (location.pathname.startsWith('/messages')) {
-        return <MessengerChatsSidebar setSelectedChat={setSelectedChat}/>
+        return <MessengerChatsSidebar
+            setSelectedChat={props.setSelectedChat}
+            handleContextMenu={props.handleContextMenu}
+        />
     }
 
     return (
-        <>
-            <div className="right-sidebar">
+        <div className="right-sidebar">
 
-            </div>
-        </>
+        </div>
     )
 }
 

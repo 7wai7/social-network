@@ -25,6 +25,9 @@ export class ChatMessages extends Model<ChatMessages, ChatMessagesCreationAttrs>
 
 	@BelongsTo(() => User, { as: 'user' })
 	user: User;
+
+	@BelongsTo(() => Chat, { as: 'chat' })
+	chat: Chat;
 	
 	@HasMany(() => ChatMessageFiles, { as: 'files' })
 	files: ChatMessageFiles[];

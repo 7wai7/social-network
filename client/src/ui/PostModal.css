@@ -9,7 +9,7 @@
 }
 
 .post-modal .panel {
-    background-color: black;
+    background-color: var(--background);
     border-radius: 12px;
     display: flex;
     flex-direction: column;
@@ -121,11 +121,6 @@
     justify-content: space-between;
 }
 
-.post-modal .panel-bottom span {
-    font-size: 18px;
-    color: white;
-}
-
 .post-modal .panel-top,
 .post-modal .scroll-area,
 .post-modal .panel-bottom {
@@ -144,10 +139,16 @@
 }
 
 .post-modal .file-input-btn:hover path {
-    fill: blue;
+    fill: var(--accent);
 }
 
 .post-modal .modal-publish-post-btn {
     height: 100%;
     padding: 0 10px;
+    font-size: 18px;
+    color: white;
+}
+
+.post-modal .modal-publish-post-btn:hover {
+    color: var(--accent);
 }

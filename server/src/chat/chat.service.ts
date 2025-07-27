@@ -23,25 +23,6 @@ export class ChatService {
     ) { }
 
     async getUserChats(userId: number) {
-        /* const chats = await this.chatModel.findAll({
-            where: { isGroup: false },
-            include: [
-                {
-                    model: User,
-                    as: 'users',
-                    where: { id: userId }, // поточний користувач
-                    through: { attributes: [] }
-                },
-                {
-                    model: User,
-                    as: 'users',
-                    required: false, // інші користувачі (другий join)
-                    where: { id: { [Op.ne]: userId } }, // крім поточного
-                    through: { attributes: [] }
-                }
-            ]
-        }); */
-
         const chats = await this.sequelize.query(`
             SELECT 
             chats.*,
@@ -102,7 +83,8 @@ export class ChatService {
         const include = [
             {
                 model: User,
-                as: 'user'
+                as: 'user',
+                attributes: ['id', 'login']
             },
             {
                 model: ChatMessageFiles,
@@ -114,7 +96,8 @@ export class ChatService {
             where,
             include,
             order: [['createdAt', 'DESC']],
-            limit: 30
+            limit: 30,
+            attributes: ['id', 'text', 'createdAt']
         });
 
         // console.log(messages);
@@ -163,7 +146,7 @@ export class ChatService {
     async createMessage(message: ChatMessageDto, files: any = []) {
         console.log("message", message);
 
-        if(!message.chat_id) throw new HttpException('Chat is not defined', HttpStatus.BAD_REQUEST)
+        if (!message.chat_id) throw new HttpException('Chat is not defined', HttpStatus.BAD_REQUEST)
 
         if (!message.text && files.length === 0) {
             throw new HttpException(
@@ -174,40 +157,48 @@ export class ChatService {
 
         const newMessage = await this.chatMessagesModel.create(message)
         const plainMessage = newMessage.get({ plain: true });
-        const messageWithUser = await this.chatMessagesModel.findByPk(plainMessage.id, {
-            include: [{ model: User, as: 'user' }],
+        const fullMessage = await this.chatMessagesModel.findByPk(plainMessage.id, {
+            attributes: ['id', 'text', 'createdAt'],
+            include: [
+                { model: User, as: 'user', attributes: ['id', 'login'] },
+                { model: Chat, as: 'chat', attributes: ['title'] }
+            ]
         });
 
-        if (!messageWithUser) return plainMessage;
+        const plainFullMessage = fullMessage?.get({ plain: true });
+        if (!plainFullMessage) return plainMessage;
+
+        console.log("fullMessage", plainFullMessage);
 
 
-        const filesDir = path.join(process.cwd(), 'data', 'chats messages', `chat_${message.chat_id}`, `message_${plainMessage.id}`);
 
-        if (files.length > 10 || files.some(f => f.size > 10_000_000_000_000)) {
-            throw new HttpException('Too many or too big files', HttpStatus.BAD_REQUEST);
-        }
+        // const filesDir = path.join(process.cwd(), 'data', 'chats messages', `chat_${message.chat_id}`, `message_${plainMessage.id}`);
+
+        // if (files.length > 10 || files.some(f => f.size > 10_000_000_000_000)) {
+        //     throw new HttpException('Too many or too big files', HttpStatus.BAD_REQUEST);
+        // }
 
         try {
-            if (files.length > 0) {
-                fs.mkdirSync(filesDir, { recursive: true });
+            // if (files.length > 0) {
+            //     fs.mkdirSync(filesDir, { recursive: true });
 
-                for (const file of files) {
-                    const ext = path.extname(file.originalname);
-                    // const base = path.basename(file.originalname, ext);
-                    const filename = `${randomUUID()}${ext}`;
+            //     for (const file of files) {
+            //         const ext = path.extname(file.originalname);
+            //         // const base = path.basename(file.originalname, ext);
+            //         const filename = `${randomUUID()}${ext}`;
 
-                    await this.chatMessageFilesModel.create({
-                        message_id: plainMessage.id,
-                        filename,
-                        mimetype: file.mimetype
-                    });
+            //         await this.chatMessageFilesModel.create({
+            //             message_id: plainMessage.id,
+            //             filename,
+            //             mimetype: file.mimetype
+            //         });
 
-                    const targetPath = path.join(filesDir, filename);
-                    fs.writeFileSync(targetPath, file.buffer);
-                }
-            }
+            //         const targetPath = path.join(filesDir, filename);
+            //         fs.writeFileSync(targetPath, file.buffer);
+            //     }
+            // }
 
-            return messageWithUser;
+            return plainFullMessage;
         } catch (error) {
             console.log(error);
 
@@ -219,9 +210,9 @@ export class ChatService {
             await newMessage.destroy();
 
             // Видаляємо папку з файлами, якщо вона створилася
-            if (fs.existsSync(filesDir)) {
-                fs.rmSync(filesDir, { recursive: true, force: true });
-            }
+            // if (fs.existsSync(filesDir)) {
+            //     fs.rmSync(filesDir, { recursive: true, force: true });
+            // }
 
             throw new HttpException("Uploading error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
