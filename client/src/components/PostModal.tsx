@@ -1,101 +1,74 @@
-import { useRef, useState, type JSX } from "react";
-import { fetchPost } from "../services/api";
-import PostModalUI, { FileElement, ImgElement, VidelElement } from "../ui/PostModalUI";
-
-type SavedFile = {
-    file: File;
-    id: string;
-};
+import { useEffect, useRef, useState } from "react";
+import { fetchCreatePost, fetchFiles } from "../services/api";
+import PostModalUI from "../ui/PostModalUI";
+import EventEmitter from "../services/EventEmitter";
+import type { AttachedFile } from "../types/attachedFile";
 
 const PostModal = (
     props: {
-        postModalRef: React.RefObject<HTMLDivElement | null>
+        layoutEmitter: EventEmitter
     }
 ) => {
-    const postModalFileInputRef = useRef<HTMLInputElement>(null);
-    const postTextareaRef = useRef<HTMLTextAreaElement>(null);
-    const mediaContainerRef = useRef<HTMLDivElement>(null);
-    const otherFilesContainerRef = useRef<HTMLDivElement>(null);
-    const [mediaElements, setMediaElements] = useState<JSX.Element[]>([]);
-    const [fileElements, setFileElements] = useState<JSX.Element[]>([]);
-    const [savedFiles, setSavedFiles] = useState<SavedFile[]>([]);
+    const postModalEmitterRef = useRef(new EventEmitter());
+    const postModalRef = useRef<HTMLDivElement>(null);
+    const attachedFilesRef = useRef<AttachedFile[]>([]);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files;
-        if (!files) return;
+    const [text, setText] = useState('');
 
-        const newFiles = Array.from(files).map(file => ({
-            file,
-            id: crypto.randomUUID(),
-        }));
+    useEffect(() => {
+        const onOpenModal = () => {
+            postModalRef.current?.removeAttribute('hidden');
+        }
+        const onCloseModal = () => {
+            postModalRef.current?.setAttribute('hidden', '');
+            setText('');
+            postModalEmitterRef.current.emit('set-attached-files', []);
+        }
 
-        setSavedFiles(prev => [...prev, ...newFiles]);
+        const onGetAttachedFiles = (files: AttachedFile[]) => {
+            attachedFilesRef.current = files;
+        }
 
-        if (!files || files.length === 0 || !mediaContainerRef.current || !otherFilesContainerRef.current) return;
+        props.layoutEmitter.on('open-post-modal', onOpenModal)
+        props.layoutEmitter.on('close-post-modal', onCloseModal)
+        postModalEmitterRef.current.on('get-attached-files', onGetAttachedFiles);
 
-        const imageExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-        const videoExts = ['mp4', 'webm', 'ogg', 'mkv'];
-        const newMediaElements: JSX.Element[] = [];
-        const newFilesElements: JSX.Element[] = [];
-
-        newFiles.map(({ file, id }) => {
-            const ext = file.name.split('.').pop()?.toLowerCase();
-            if (!ext) return;
-
-            const url = URL.createObjectURL(file); // створення тимчасового URL
-
-            if (imageExts.includes(ext)) {
-                newMediaElements.push(
-                    <ImgElement key={id} url={url} id={id} removeFileById={removeFileById} />
-                );
-            } else if (videoExts.includes(ext)) {
-                newMediaElements.push(
-                    <VidelElement key={id} url={url} id={id} removeFileById={removeFileById} />
-                );
-            } else {
-                newFilesElements.push(
-                    <FileElement key={id} filename={file.name} id={id} removeFileById={removeFileById} />
-                );
-            }
-        });
-
-        setMediaElements(prev => [...prev, ...newMediaElements]);
-        setFileElements(prev => [...prev, ...newFilesElements]);
-    };
-
-    const removeFileById = (id: string) => {
-        setMediaElements(prev => prev.filter(el => el.key !== id));
-        setFileElements(prev => prev.filter(el => el.key !== id));
-        setSavedFiles(prev => prev.filter(file => file.id !== id));
-    }
+        return () => {
+            props.layoutEmitter.off('open-post-modal', onOpenModal)
+            props.layoutEmitter.off('close-post-modal', onCloseModal)
+            postModalEmitterRef.current.off('get-attached-files', onGetAttachedFiles);
+        }
+    }, [])
 
     const publishPost = () => {
-        if (!postTextareaRef.current) return;
+        if (!text.trim() && attachedFilesRef.current.length == 0) return;
 
-        const text = postTextareaRef.current.value;
         const formData = new FormData();
-
-        formData.append('text', text);
-        savedFiles.forEach(({ file }) => {
+        attachedFilesRef.current.forEach(({ file, url }) => {
             formData.append('files', file);
+            URL.revokeObjectURL(url)
         });
 
-        fetchPost(formData)
-            .catch((error) => console.error('Помилка при створенні поста:', error));
+        fetchFiles(formData)
+            .then(data => {
+                fetchCreatePost({ text, files: data })
+                    .then(post => {
+                        props.layoutEmitter.emit('add-profile-post', post);
+                        props.layoutEmitter.emit('close-post-modal');
+                    })
+                    .catch((error) => console.error('Помилка при створенні поста:', error));
+            })
+            .catch((error) => console.error('Помилка при завантаженні файлів:', error));
     };
 
 
     return <PostModalUI
-        postModalRef={props.postModalRef}
-        postTextareaRef={postTextareaRef}
-        mediaContainerRef={mediaContainerRef}
-        otherFilesContainerRef={otherFilesContainerRef}
-        postModalFileInputRef={postModalFileInputRef}
-        mediaElements={mediaElements}
-        fileElements={fileElements}
-        handleFileChange={handleFileChange}
+        layoutEmitter={props.layoutEmitter}
+        text={text}
+        setText={setText}
+        postModalRef={postModalRef}
+        postModalEmitter={postModalEmitterRef.current}
         publishPost={publishPost}
-        closeModal={() => props.postModalRef.current?.setAttribute('hidden', '')}
     />
 };
 

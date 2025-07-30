@@ -1,6 +1,7 @@
 import { Model, Column, DataType, Table, ForeignKey, BelongsTo, BelongsToMany, HasMany } from "sequelize-typescript";
 import { User } from "./users.model";
-import { PostFile } from "./postFile.model";
+import { Files } from "./files.model";
+import { PostFiles } from "./postFiles.model";
 
 interface PostsCreationAttrs {
 	user_id: number;
@@ -9,7 +10,7 @@ interface PostsCreationAttrs {
 
 @Table({ tableName: 'posts' })
 export class Post extends Model<Post, PostsCreationAttrs> {
-  	@ForeignKey(() => User)
+	@ForeignKey(() => User)
 	@Column({ type: DataType.INTEGER, allowNull: false })
 	user_id: number;
 
@@ -18,7 +19,7 @@ export class Post extends Model<Post, PostsCreationAttrs> {
 
 	@Column({ type: DataType.STRING, allowNull: true })
 	text: string;
-	
-	@HasMany(() => PostFile, { as: 'files' })
-	files: PostFile[];
+
+	@BelongsToMany(() => Files, () => PostFiles)
+	files: Files[];
 }

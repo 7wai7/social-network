@@ -6,6 +6,7 @@ import type { Chat } from '../types/chat';
 import type { User } from '../types/user';
 import type { Message } from '../types/message';
 import type { ChatUser } from '../types/chatUser';
+import type { File } from '../types/file';
 
 
 
@@ -95,6 +96,25 @@ export async function fetchFeed(): Promise<Post[]> {
 export async function fetchPost(formData: FormData): Promise<boolean> {
 	return await fetch(api.post('/api/posts', formData));
 }
+
+export async function fetchCreatePost(post: { text: string, files: File[] }): Promise<number> {
+	return await fetch(
+		api.post('/api/posts',
+			post,
+			{
+				headers: {
+					"Content-Type": "application/json",
+				}
+			}
+		)
+	);
+}
+
+export async function fetchFiles(formData: FormData): Promise<File[]> {
+	return await fetch(api.post(`/api/storage/upload`, formData));
+}
+
+
 
 export async function fetchFollow(id: number): Promise<boolean> {
 	return await fetch(api.post(`/api/users/follow/${id}`));

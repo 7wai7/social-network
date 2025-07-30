@@ -1,26 +1,33 @@
 import type { JSX } from "react";
-import React from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import type { Message } from "../types/message";
 import { useUser } from "../contexts/UserContext";
 import type { Chat } from "../types/chat";
 import './Messages.css'
+import type EventEmitter from "../services/EventEmitter";
+import AttachedFilesPreview from "../components/AttachedFilesPreview";
+import AttachedFiles from "../components/AttachedFiles";
 
 export default function Messages(
     props: {
+        layoutEmitter: EventEmitter,
+        messagesEmitter: EventEmitter,
         messagesWrapperRef: React.RefObject<HTMLDivElement | null>,
-        attachFileInputRef: React.RefObject<HTMLInputElement | null>,
         textareaRef: React.RefObject<HTMLTextAreaElement | null>,
         selectedChat: Chat | null,
         allMessages: Message[],
-        handleContextMenu: (e: { preventDefault: () => void; pageX: any; pageY: any; }, callback: (setMenuButtons: React.Dispatch<React.SetStateAction<JSX.Element>>) => void) => void,
-        loadMessagesOnTop: () => void,
-        attachFileChangeHandler: (event: React.ChangeEvent<HTMLInputElement>) => void,
-        sendMessage: () => void
+        onScroll: any,
+        sendMessage: () => void,
+        deleteMessage: (id: number) => void
     }
 ): JSX.Element {
     const { user } = useUser();
+    const attachFilesInputRef = useRef<HTMLInputElement>(null);
+
 
     const renderMessagesByDate = (messages: Message[] | unknown): JSX.Element => {
+        console.count("renderMessagesByDate");
+
         if (!Array.isArray(messages)) return <></>
 
         const groupDays: Record<string, Message[]> = {};
@@ -55,32 +62,36 @@ export default function Messages(
     const renderMessage = (m: Message): JSX.Element => {
         const isOwnMessage = m.user.id === user?.id;
 
-        const callback = (setMenuButtons: React.Dispatch<React.SetStateAction<JSX.Element>>) => {
-            setMenuButtons(<>
-                {
+        const buttons: JSX.Element =
+        <>
+            {
                     isOwnMessage && (
                         <button>
                             <span>Edit</span>
                         </button>
                     )
                 }
-                <button>
-                    <span>Copy text</span>
-                </button>
+                {m.text.trim() && (
+                    <button>
+                        <span>Copy text</span>
+                    </button>
+                )}
                 {
                     isOwnMessage && (
-                        <button>
+                        <button onClick={() => props.deleteMessage(m.id)}>
                             <span>Delete</span>
                         </button>
                     )
                 }
-            </>)
-        }
+        </>
 
         return (
-            <div className={`message ${isOwnMessage ? 'own-message' : ''}`} key={m.id} onContextMenu={(e) => props.handleContextMenu(e, callback)}>
+            <div className={`message ${isOwnMessage ? 'own-message' : ''}`} key={m.id} onContextMenu={(e) => props.layoutEmitter.emit('handle-context-menu', e, buttons)}>
                 {!isOwnMessage ? <h5 className="sender">{m.user.login}</h5> : ''}
-                <div className="message-content">{m.text}</div>
+                {m.text.trim() && (
+                    <div className="message-content">{m.text}</div>
+                )}
+                <AttachedFiles attachedFiles={m.files} />
                 <div className="time-ago">{new Date(m.createdAt).toLocaleTimeString(
                     'uk-UA',
                     {
@@ -92,6 +103,12 @@ export default function Messages(
         )
     }
 
+
+    const renderedMessages = useMemo(() => {
+        return renderMessagesByDate(props.allMessages);
+    }, [props.allMessages]);
+
+
     return (
         <>
             <div className='chat-window'>
@@ -99,20 +116,20 @@ export default function Messages(
                     props.selectedChat
                         ? <>
                             <h2 className='chat-title'>{props.selectedChat.title || props.selectedChat.other_user_login}</h2>
-                            <div className="messages-wrapper" ref={props.messagesWrapperRef} onScroll={() => props.loadMessagesOnTop()}>
+                            <div className="messages-wrapper" ref={props.messagesWrapperRef} onScroll={props.onScroll}>
                                 <div className="messages-container">
-                                    {renderMessagesByDate(props.allMessages)}
+                                    {renderedMessages}
                                 </div>
                             </div>
                             <div className="message-textarea-wrapper">
                                 <button className='attach-file-btn' onClick={() => {
-                                    const fileInput = props.attachFileInputRef.current;
+                                    const fileInput = attachFilesInputRef.current;
                                     if (fileInput) {
                                         fileInput.value = '';
                                         fileInput.click();
                                     }
                                 }}>
-                                    <input type="file" multiple className='attach-file-input' hidden ref={props.attachFileInputRef} onChange={props.attachFileChangeHandler} />
+                                    <input type="file" multiple className='attach-file-input' hidden ref={attachFilesInputRef} />
                                     <svg
                                         viewBox="0 0 28 28"
                                         fill="none"
@@ -130,6 +147,7 @@ export default function Messages(
                                 </button>
                                 <div className='scroll-block'>
                                     <textarea name="message" className="message-textarea textarea-autosize" placeholder="Повідомлення" ref={props.textareaRef}></textarea>
+                                    <AttachedFilesPreview emitter={props.messagesEmitter} attachFileInputRef={attachFilesInputRef} />
                                 </div>
                                 <button className="send-messages-btn" onClick={() => props.sendMessage()}>
                                     <svg fill="#fff" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">

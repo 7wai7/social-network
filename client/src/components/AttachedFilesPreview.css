@@ -1,0 +1,75 @@
+
+.attached-files-container .media-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+    margin-top: 20px;
+}
+
+.attached-files-container .other-files-container {
+    margin-top: 20px;
+	display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.attached-files-container .other-files-container .file-preview {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    font-size: 18px;
+}
+
+.attached-files-container .other-files-container .file-preview .file-icon {
+    width: 30px;
+    height: 30px;
+}
+
+.attached-files-container .remove-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+	background-color: rgba(211, 211, 211, 0.523);
+    border-radius: 50px;
+}
+
+.attached-files-container .remove-btn path {
+    fill: black;
+}
+
+.attached-files-container .file-preview .remove-btn {
+    position: static;
+    margin: auto;
+    margin-right: 10px;
+    background-color: unset;
+}
+
+.attached-files-container .file-preview .remove-btn path {
+    fill: white;
+}
+
+.attached-files-container .file-preview:has(.remove-btn:hover) {
+	background-color: var(--light-gray-transparent);
+}
+
+
+.attached-files-container .preview-img,
+.attached-files-container .preview-video {
+    width: 100%;
+    position: relative;
+    max-width: 300px;
+	height: auto;
+	object-fit: contain;
+	background: #000;
+}
+
+.attached-files-container img,
+.attached-files-container video {
+    width: 100%;
+	border-radius: 10px;
+}

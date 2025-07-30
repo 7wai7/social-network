@@ -2,8 +2,6 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ChatMessageDto } from 'src/dto/create-chat-message.dto';
 import { Chat } from 'src/models/chat.model';
-import { ChatMessageFiles } from 'src/models/chatMessageFiles.model';
-import { ChatMessages } from 'src/models/chatMessages.model';
 import { ChatParticipants } from 'src/models/chatParticipants.model';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -11,15 +9,21 @@ import { randomUUID } from 'crypto';
 import { User } from 'src/models/users.model';
 import { Op, QueryTypes } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { Files } from 'src/models/files.model';
+import { Messages } from 'src/models/messages.model';
+import { MessageFiles } from 'src/models/messageFiles.model';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class ChatService {
     constructor(
         @InjectModel(Chat) private chatModel: typeof Chat,
         @InjectModel(ChatParticipants) private chatParticipantsModel: typeof ChatParticipants,
-        @InjectModel(ChatMessages) private chatMessagesModel: typeof ChatMessages,
-        @InjectModel(ChatMessageFiles) private chatMessageFilesModel: typeof ChatMessageFiles,
+        @InjectModel(Messages) private messagesModel: typeof Messages,
+        @InjectModel(MessageFiles) private messageFilesModel: typeof MessageFiles,
+        @InjectModel(Files) private filesModel: typeof Files,
         @Inject(Sequelize) private readonly sequelize: Sequelize,
+        private readonly storageService: StorageService,
     ) { }
 
     async getUserChats(userId: number) {
@@ -71,7 +75,7 @@ export class ChatService {
     async getChatMessages(
         chatId: number,
         cursor?: string
-    ): Promise<ChatMessages[]> {
+    ): Promise<Messages[]> {
         const where: any = {
             chat_id: chatId
         };
@@ -87,12 +91,14 @@ export class ChatService {
                 attributes: ['id', 'login']
             },
             {
-                model: ChatMessageFiles,
-                as: 'files'
+                model: Files,
+                as: 'files',
+                through: { attributes: [] },
+                required: false
             }
         ];
 
-        const messages = await this.chatMessagesModel.findAll({
+        const messages = await this.messagesModel.findAll({
             where,
             include,
             order: [['createdAt', 'DESC']],
@@ -143,99 +149,113 @@ export class ChatService {
         return null;
     }
 
-    async createMessage(message: ChatMessageDto, files: any = []) {
-        console.log("message", message);
+    async createMessage(messageDto: ChatMessageDto) {
+        if (!messageDto.chat_id) throw new HttpException('Chat is not defined', HttpStatus.BAD_REQUEST)
 
-        if (!message.chat_id) throw new HttpException('Chat is not defined', HttpStatus.BAD_REQUEST)
-
-        if (!message.text && files.length === 0) {
+        if (!messageDto.text && messageDto.files?.length === 0) {
             throw new HttpException(
                 'Message must contain either text or at least one file',
                 HttpStatus.BAD_REQUEST
             );
         }
 
-        const newMessage = await this.chatMessagesModel.create(message)
-        const plainMessage = newMessage.get({ plain: true });
-        const fullMessage = await this.chatMessagesModel.findByPk(plainMessage.id, {
-            attributes: ['id', 'text', 'createdAt'],
-            include: [
-                { model: User, as: 'user', attributes: ['id', 'login'] },
-                { model: Chat, as: 'chat', attributes: ['title'] }
-            ]
-        });
-
-        const plainFullMessage = fullMessage?.get({ plain: true });
-        if (!plainFullMessage) return plainMessage;
-
-        console.log("fullMessage", plainFullMessage);
-
-
-
-        // const filesDir = path.join(process.cwd(), 'data', 'chats messages', `chat_${message.chat_id}`, `message_${plainMessage.id}`);
-
-        // if (files.length > 10 || files.some(f => f.size > 10_000_000_000_000)) {
-        //     throw new HttpException('Too many or too big files', HttpStatus.BAD_REQUEST);
-        // }
+        const transaction = await this.sequelize.transaction();
 
         try {
-            // if (files.length > 0) {
-            //     fs.mkdirSync(filesDir, { recursive: true });
+            const message = await this.messagesModel.create(messageDto, { transaction });
 
-            //     for (const file of files) {
-            //         const ext = path.extname(file.originalname);
-            //         // const base = path.basename(file.originalname, ext);
-            //         const filename = `${randomUUID()}${ext}`;
+            if (messageDto.files && messageDto.files.length > 0) {
+                const filesRaws = await this.filesModel.bulkCreate(messageDto.files, { transaction });
+                await message.$set('files', filesRaws, { transaction });
+            }
 
-            //         await this.chatMessageFilesModel.create({
-            //             message_id: plainMessage.id,
-            //             filename,
-            //             mimetype: file.mimetype
-            //         });
+            await transaction.commit();
 
-            //         const targetPath = path.join(filesDir, filename);
-            //         fs.writeFileSync(targetPath, file.buffer);
-            //     }
-            // }
 
-            return plainFullMessage;
+            const fullMessage = await this.messagesModel.findByPk(message.id, {
+                attributes: ['id', 'text', 'createdAt'],
+                include: [
+                    { model: User, as: 'user', attributes: ['id', 'login'] },
+                    { model: Chat, as: 'chat', attributes: ['title'] },
+                    { model: Files, as: 'files', through: { attributes: [] }, required: false }
+                ]
+            });
+
+            return fullMessage?.get({ plain: true });
         } catch (error) {
-            console.log(error);
-
-            await this.chatMessageFilesModel.destroy({
-                where: {
-                    message_id: plainMessage.id
-                }
-            })
-            await newMessage.destroy();
-
-            // Видаляємо папку з файлами, якщо вона створилася
-            // if (fs.existsSync(filesDir)) {
-            //     fs.rmSync(filesDir, { recursive: true, force: true });
-            // }
-
-            throw new HttpException("Uploading error", HttpStatus.INTERNAL_SERVER_ERROR);
+            await transaction.rollback();
+            throw new HttpException('Error create message: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
 
-    async deleteMessageByOwner(id: number, userId: number) {
-        const message = await this.chatMessagesModel.findOne({ where: { id } });
-        if (!message) throw new HttpException("Message not found", HttpStatus.NOT_FOUND);
-        if (message.user_id !== userId) throw new HttpException('Forbidden: not your message', HttpStatus.FORBIDDEN);
 
-        const plainMessage = message.get({ plain: true });
-        const filesDir = path.join(__dirname, '..', '..', 'data', 'chats messages', `chat_${plainMessage.chat_id}`, `message_${plainMessage.id}`);
 
-        await Promise.all([
-            message.destroy(),
-            this.chatMessageFilesModel.destroy({ where: { message_id: id } }),
-        ]);
+    async deleteMessage(id: number) {
+        const transaction = await this.sequelize.transaction();
 
-        if (fs.existsSync(filesDir)) {
-            fs.rmSync(filesDir, { recursive: true, force: true });
+        try {
+            const message = await this.messagesModel.findByPk(id, {
+                include: [{
+                    model: Files,
+                    as: 'files',
+                    through: { attributes: [] },
+                    required: false
+                }],
+                transaction
+            });
+            if (!message) {
+                throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+            }
+
+            // Отримуємо всі файли
+            const plainMessage = message.get({ plain: true });
+            const files = [...plainMessage.files];
+            const fileIds = files.map(file => file.id);
+
+            // Видаляємо зв’язки
+            await this.messageFilesModel.destroy({
+                where: { message_id: id },
+                transaction
+            });
+
+            // Видаляємо файли
+            if (fileIds.length > 0) {
+                await this.filesModel.destroy({
+                    where: { id: fileIds },
+                    transaction
+                });
+            }
+
+            // Видаляємо само мовідомлення
+            await this.messagesModel.destroy({
+                where: { id },
+                transaction
+            });
+
+            // Видаляєм файли
+            for (const file of files) {
+                const filename = file.url.split('/').pop();
+                if (filename) await this.storageService.deleteFile(filename);
+            }
+
+            await transaction.commit();
+            return plainMessage;
+        } catch (error) {
+            console.log(error);
+
+            await transaction.rollback();
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
 
-        return true;
+    async deleteMessageByOwner(id: number, userId: number) {
+        const message = await this.messagesModel.findByPk(id, { plain: true });
+        if (!message) throw new HttpException("Message not found", HttpStatus.NOT_FOUND);
+        const plainMessage = message.get({ plain: true });
+		
+        if (plainMessage.user_id !== userId) throw new HttpException('Forbidden: not your message', HttpStatus.FORBIDDEN);
+
+        return await this.deleteMessage(id);
     }
 }

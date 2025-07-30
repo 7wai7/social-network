@@ -7,11 +7,12 @@ import { getSocket } from "../services/socket";
 import type { ChatUser } from "../types/chatUser";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import type EventEmitter from "../services/EventEmitter";
 
 const MessengerChatsSidebar = (
     props: {
+        layoutEmitter: EventEmitter,
         setSelectedChat: React.Dispatch<React.SetStateAction<Chat | null>>,
-        handleContextMenu: (e: { preventDefault: () => void; pageX: any; pageY: any; }, callback: (setMenuButtons: React.Dispatch<React.SetStateAction<JSX.Element>>) => void) => void,
     }
 ): JSX.Element => {
     const [searchResults, setSearchResults] = useState<ChatUser[]>([]);
@@ -48,13 +49,13 @@ const MessengerChatsSidebar = (
     }
 
     const renderUserChatItem = (user: ChatUser): JSX.Element => {
-        const callback = (setMenuButtons: React.Dispatch<React.SetStateAction<JSX.Element>>) => {
-            setMenuButtons(<>
+        const buttons: JSX.Element =
+            <>
                 <Link to={`/profile/${user.login}`}>
                     <span>Profile</span>
                 </Link>
-            </>)
-        }
+            </>
+
 
         return (
             <button
@@ -66,7 +67,7 @@ const MessengerChatsSidebar = (
                     other_user_id: user.user_id,
                     other_user_login: user.login
                 })}
-                onContextMenu={(e) => props.handleContextMenu(e, callback)}
+                onContextMenu={(e) => props.layoutEmitter.emit('handle-context-menu', e, buttons)}
             >
                 <img
                     src={`http://localhost:3000/avatars/${user.login}`}
@@ -83,8 +84,8 @@ const MessengerChatsSidebar = (
     }
 
     const renderChatItem = (chat: Chat): JSX.Element => {
-        const callback = (setMenuButtons: React.Dispatch<React.SetStateAction<JSX.Element>>) => {
-            setMenuButtons(<>
+        const buttons: JSX.Element =
+            <>
                 {
                     chat.other_user_login
                         ? (
@@ -98,8 +99,7 @@ const MessengerChatsSidebar = (
                             </button>
                         )
                 }
-            </>)
-        }
+            </>
 
 
         return (
@@ -107,7 +107,7 @@ const MessengerChatsSidebar = (
                 className="chat-item chat"
                 key={`chat-${chat.id}`}
                 onClick={() => onChatClick(chat)}
-                onContextMenu={(e) => props.handleContextMenu(e, callback)}
+                onContextMenu={(e) => props.layoutEmitter.emit('handle-context-menu', e, buttons)}
             >
                 💬 {chat.title || chat.other_user_login} {chat.other_user_id}
             </button>

@@ -118,6 +118,22 @@
 
 
 
+.chat-window .media-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+    margin-top: 20px;
+}
+
+.chat-window .other-files-container {
+    margin-top: 20px;
+	display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+
 .select-chat-title {
     margin: auto;
     color: white;

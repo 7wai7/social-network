@@ -35,8 +35,6 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
         inputRefs.password.current.type === 'password' ? inputRefs.password.current.type = 'text' : inputRefs.password.current.type = 'password';
     }
 
-    // const getRefValue = (ref: React.RefObject<HTMLInputElement | null>) => ref?.current?.value || "";
-
     const hideErrors = () => {
         const fields: Field[] = ['login', 'email', 'password'];
 

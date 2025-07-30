@@ -2,7 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { Server, Socket } from 'socket.io';
 import { ChatMessageDto } from 'src/dto/create-chat-message.dto';
 import { ChatService } from './chat.service';
-import { UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { HttpException, HttpStatus, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.quard';
 import { JwtSocketAuthGuard } from './jwt-socket-auth.guard';
 import { AuthService } from 'src/auth/auth.service';
@@ -50,23 +50,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@ConnectedSocket() client: Socket
 	) {
 		const user = client.handshake['user'];
-		console.log("chat-message user", user);
-		
-		console.log("chat-message data", data);
-
-		const files = data.files || [];
 		try {
 			const newMessage = { ...data, user_id: user.id };
-			console.log("chat-message newMessage", newMessage);
-
 			const newChatId = await this.chatService.createChatIfNotExists(newMessage);
-			console.log("newChatId", newChatId);
-
 			if (newChatId) {
 				newMessage.chat_id = newChatId;
 			}
 
-			const message = await this.chatService.createMessage(newMessage, files);
+			const message = await this.chatService.createMessage(newMessage);
+
+			if (!message) throw new HttpException('Error create message', HttpStatus.INTERNAL_SERVER_ERROR);
 
 			if (newChatId) {
 				client.join(String(message.chat_id)); // join не одразу додає в кімнату
@@ -84,14 +77,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@UseGuards(JwtSocketAuthGuard)
 	@SubscribeMessage('delete-message')
 	async deleteMessage(
-		@MessageBody() data: { id: number, chatId: string },
+		@MessageBody() data: { id: number },
 		@ConnectedSocket() client: Socket
 	) {
 		const user = client.handshake['user'];
 		try {
-			await this.chatService.deleteMessageByOwner(data.id, user.id);
-			this.server.to(String(data.chatId)).emit('message-deleted', { id: data.id });
+			const deletedMessage = await this.chatService.deleteMessageByOwner(data.id, user.id);
+
+			const messageData = {
+				id: deletedMessage.id,
+				chat_id: deletedMessage.chat_id
+			}
+			client.emit('delete-message', messageData);
+			this.server.to(String(messageData.chat_id)).emit('delete-message', messageData);
 		} catch (err) {
+			console.log(err);
+
 			client.emit('delete-message-error', {
 				error: err?.message || 'Failed to delete message',
 			});

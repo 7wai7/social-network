@@ -4,19 +4,22 @@ import { useLocation } from "react-router-dom";
 import React from "react";
 import type { Chat } from "../types/chat";
 import MessengerChatsSidebar from "./MessengerChatsSidebar";
+import type EventEmitter from "../services/EventEmitter";
 
 const RightSidebar = (
     props: {
+        layoutEmitter: EventEmitter,
         setSelectedChat: React.Dispatch<React.SetStateAction<Chat | null>>,
-        handleContextMenu: (e: { preventDefault: () => void; pageX: any; pageY: any; }, callback: (setMenuButtons: React.Dispatch<React.SetStateAction<JSX.Element>>) => void) => void,
+        // handleContextMenu: (e: { preventDefault: () => void; pageX: any; pageY: any; }, callback: (setMenuButtons: React.Dispatch<React.SetStateAction<JSX.Element>>) => void) => void,
     }
 ): JSX.Element => {
     const location = useLocation();
 
     if (location.pathname.startsWith('/messages')) {
         return <MessengerChatsSidebar
+            layoutEmitter={props.layoutEmitter}
             setSelectedChat={props.setSelectedChat}
-            handleContextMenu={props.handleContextMenu}
+            // handleContextMenu={props.handleContextMenu}
         />
     }
 

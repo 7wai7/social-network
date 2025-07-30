@@ -3,6 +3,7 @@ import "./Footer.css"
 import { Link } from "react-router-dom";
 import type { Message } from "../types/message";
 import type { Chat } from "../types/chat";
+import type EventEmitter from "../services/EventEmitter";
 
 export interface PostModalFun {
     open: () => void;
@@ -11,13 +12,13 @@ export interface PostModalFun {
 
 export default function Footer(
     props: {
-        postModalFun: PostModalFun,
+        layoutEmitter: EventEmitter,
         lastChatMessage: Message | null,
         setSelectedChat: React.Dispatch<React.SetStateAction<Chat | null>>
     }
 ): JSX.Element {
     const setSelectedChatByMessage = (m: Message | null) => {
-        if(!m) return;
+        if (!m) return;
 
         props.setSelectedChat({
             id: m.chat?.id,
@@ -31,7 +32,7 @@ export default function Footer(
     return (
         <footer>
             <div className="footer-content">
-                <button className='post-btn' onClick={() => props.postModalFun.open()}>
+                <button className='post-btn' onClick={() => props.layoutEmitter.emit('open-post-modal')}>
                     <span>Post</span>
                 </button>
                 <div className="last-chat-message-block">

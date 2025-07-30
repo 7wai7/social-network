@@ -1,21 +1,22 @@
 import { Model, Column, DataType, Table, ForeignKey, BelongsTo, BelongsToMany, HasMany } from "sequelize-typescript";
 import { User } from "./users.model";
-import { ChatMessageFiles } from "./chatMessageFiles.model";
 import { Chat } from "./chat.model";
+import { Files } from "./files.model";
+import { MessageFiles } from "./messageFiles.model";
 
-interface ChatMessagesCreationAttrs {
+interface MessagesCreationAttrs {
 	user_id: number; // власник повідомлення
 	chat_id: number // чат де надіслано повідомлення
 	text: string;
 }
 
-@Table({ tableName: 'chat_messages' })
-export class ChatMessages extends Model<ChatMessages, ChatMessagesCreationAttrs> {
-  	@ForeignKey(() => User)
+@Table({ tableName: 'messages' })
+export class Messages extends Model<Messages, MessagesCreationAttrs> {
+	@ForeignKey(() => User)
 	@Column({ type: DataType.INTEGER, allowNull: false })
 	user_id: number;
 
-  	@ForeignKey(() => Chat)
+	@ForeignKey(() => Chat)
 	@Column({ type: DataType.INTEGER, allowNull: false })
 	chat_id: number;
 
@@ -28,7 +29,7 @@ export class ChatMessages extends Model<ChatMessages, ChatMessagesCreationAttrs>
 
 	@BelongsTo(() => Chat, { as: 'chat' })
 	chat: Chat;
-	
-	@HasMany(() => ChatMessageFiles, { as: 'files' })
-	files: ChatMessageFiles[];
+
+	@BelongsToMany(() => Files, () => MessageFiles)
+	files: Files[];
 }
