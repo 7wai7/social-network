@@ -1,4 +1,10 @@
 
+.attached-files-container.preview {
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
 .attached-files-container .media-container {
 	display: flex;
 	flex-wrap: wrap;

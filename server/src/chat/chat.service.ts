@@ -103,7 +103,7 @@ export class ChatService {
             include,
             order: [['createdAt', 'DESC']],
             limit: 30,
-            attributes: ['id', 'text', 'createdAt']
+            attributes: ['id', 'text', 'chat_id', 'createdAt']
         });
 
         // console.log(messages);
@@ -152,7 +152,7 @@ export class ChatService {
     async createMessage(messageDto: ChatMessageDto) {
         if (!messageDto.chat_id) throw new HttpException('Chat is not defined', HttpStatus.BAD_REQUEST)
 
-        if (!messageDto.text && messageDto.files?.length === 0) {
+        if (!messageDto.text && !messageDto.files?.length) {
             throw new HttpException(
                 'Message must contain either text or at least one file',
                 HttpStatus.BAD_REQUEST
@@ -164,7 +164,7 @@ export class ChatService {
         try {
             const message = await this.messagesModel.create(messageDto, { transaction });
 
-            if (messageDto.files && messageDto.files.length > 0) {
+            if (messageDto.files?.length) {
                 const filesRaws = await this.filesModel.bulkCreate(messageDto.files, { transaction });
                 await message.$set('files', filesRaws, { transaction });
             }
@@ -173,7 +173,7 @@ export class ChatService {
 
 
             const fullMessage = await this.messagesModel.findByPk(message.id, {
-                attributes: ['id', 'text', 'createdAt'],
+                attributes: ['id', 'text', 'chat_id', 'createdAt'],
                 include: [
                     { model: User, as: 'user', attributes: ['id', 'login'] },
                     { model: Chat, as: 'chat', attributes: ['title'] },
@@ -189,6 +189,60 @@ export class ChatService {
     }
 
 
+    async updateMessage(messageDto: ChatMessageDto) {
+        const transaction = await this.sequelize.transaction();
+
+        try {
+            const message = await this.messagesModel.findByPk(messageDto.id, { transaction });
+            if (!message) throw new HttpException('Message mot found', HttpStatus.NOT_FOUND);
+
+            await this.messagesModel.update(
+                { text: messageDto.text },
+                {
+                    where: { id: messageDto.id },
+                    transaction
+                },
+            )
+
+            if (messageDto.filesToDeleteIds?.length) {
+                const filesRaws = await this.filesModel.findAll({ where: { id: messageDto.filesToDeleteIds }, transaction });
+                await message.$remove('files', filesRaws, { transaction });
+            }
+
+            if (messageDto.files?.length) {
+                const filesRaws = await this.filesModel.bulkCreate(messageDto.files, { transaction });
+                await message.$set('files', filesRaws, { transaction });
+            }
+
+            await transaction.commit();
+
+
+            const fullMessage = await this.messagesModel.findByPk(messageDto.id, {
+                attributes: ['id', 'text', 'chat_id', 'createdAt'],
+                include: [
+                    { model: User, as: 'user', attributes: ['id', 'login'] },
+                    { model: Chat, as: 'chat', attributes: ['title'] },
+                    { model: Files, as: 'files', through: { attributes: [] }, required: false }
+                ]
+            });
+
+            return fullMessage?.get({ plain: true });
+        } catch (error) {
+            await transaction.rollback();
+            throw new HttpException('Error updating message: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async updateMessageByOwner(messageDto: ChatMessageDto, userId: number) {
+        if (!messageDto.id) throw new HttpException("Message id not correct", HttpStatus.BAD_REQUEST);
+        const message = await this.messagesModel.findByPk(messageDto.id);
+        if (!message) throw new HttpException("Message not found", HttpStatus.NOT_FOUND);
+        const plainMessage = message.get({ plain: true });
+
+        if (plainMessage.user_id !== userId) throw new HttpException('Forbidden: not your message', HttpStatus.FORBIDDEN);
+
+        return await this.updateMessage(messageDto);
+    }
 
 
     async deleteMessage(id: number) {
@@ -250,10 +304,10 @@ export class ChatService {
     }
 
     async deleteMessageByOwner(id: number, userId: number) {
-        const message = await this.messagesModel.findByPk(id, { plain: true });
+        const message = await this.messagesModel.findByPk(id);
         if (!message) throw new HttpException("Message not found", HttpStatus.NOT_FOUND);
         const plainMessage = message.get({ plain: true });
-		
+
         if (plainMessage.user_id !== userId) throw new HttpException('Forbidden: not your message', HttpStatus.FORBIDDEN);
 
         return await this.deleteMessage(id);

@@ -68,8 +68,8 @@
 
 .message .message-content {
     font-size: 14px;
+    font-family: var(--arial-font);
     color: white;
-    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 .message .time-ago {
@@ -77,6 +77,51 @@
     color: rgb(190, 190, 190);
 }
 
+
+
+
+
+
+.chat-window .editing-message-block {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.chat-window .editing-message-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 6px;
+}
+
+.chat-window .edit-message-data {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-window .editing-message-block .edit-message-title {
+    color: var(--accent);
+    font-size: 14px;
+    font-family: var(--arial-font);
+}
+
+.chat-window .editing-message-block .edit-message-text {
+    color: lightgray;
+}
+
+.chat-window .is-checked-to-delete {
+    color: red;
+}
+
+.chat-window .cancel-editing-message {
+    width: 20px;
+    height: 20px;
+    margin: auto 0 auto auto;
+}
 
 
 .message-textarea-wrapper {
@@ -105,6 +150,7 @@
 }
 
 .message-textarea-wrapper .attach-file-btn,
+.message-textarea-wrapper .change-file-btn,
 .message-textarea-wrapper .send-messages-btn {
     margin: 6px;
     width: 24px;
@@ -112,6 +158,7 @@
 }
 
 .message-textarea-wrapper .attach-file-btn:hover path,
+.message-textarea-wrapper .change-file-btn:hover path,
 .message-textarea-wrapper .send-messages-btn:hover path {
     fill: var(--accent);
 }

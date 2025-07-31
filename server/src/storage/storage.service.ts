@@ -185,4 +185,11 @@ export class StorageService {
         await bucket.file(filename).delete();
     }
 
+    async deleteFilesByUrls(urls: string[]): Promise<void> {
+        for (const url of urls) {
+            const filename = url.split('/').pop();
+            if(filename) await this.deleteFile(filename);
+        }
+    }
+
 }

@@ -158,7 +158,7 @@ export default React.memo(function AttachedFilesPreview(
     }, [props.attachFileInputRef]);
 
     return (
-        <div className="attached-files-container">
+        <div className="attached-files-container preview">
             {renderAttachedFilesPreview()}
         </div>
     )

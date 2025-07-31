@@ -69,8 +69,29 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				this.server.to(String(message.chat_id)).emit('chat-message', message); // розсилка всім
 		} catch (err) {
 			console.log(err);
-
 			client.emit('chat-message-error', err);
+		}
+	}
+
+	@UseGuards(JwtSocketAuthGuard)
+	@SubscribeMessage('update-message')
+	async updataMessage(
+		@MessageBody() data: ChatMessageDto,
+		@ConnectedSocket() client: Socket
+	) {
+		const user = client.handshake['user'];
+		try {
+
+			const updateMessage = { ...data, user_id: user.id };
+			const updatedMessage = await this.chatService.updateMessageByOwner(updateMessage, user.id);
+
+			if (updatedMessage) {
+				client.emit('update-message', updatedMessage); // переслати власнику для рендеру
+				client.to(String(updatedMessage.chat_id)).emit('update-message', updatedMessage); // переслати всім крім власника
+			}
+		} catch (err) {
+			console.log(err);
+			client.emit('update-chat-message-error', err);
 		}
 	}
 

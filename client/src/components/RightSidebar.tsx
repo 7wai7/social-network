@@ -10,7 +10,6 @@ const RightSidebar = (
     props: {
         layoutEmitter: EventEmitter,
         setSelectedChat: React.Dispatch<React.SetStateAction<Chat | null>>,
-        // handleContextMenu: (e: { preventDefault: () => void; pageX: any; pageY: any; }, callback: (setMenuButtons: React.Dispatch<React.SetStateAction<JSX.Element>>) => void) => void,
     }
 ): JSX.Element => {
     const location = useLocation();
@@ -19,7 +18,6 @@ const RightSidebar = (
         return <MessengerChatsSidebar
             layoutEmitter={props.layoutEmitter}
             setSelectedChat={props.setSelectedChat}
-            // handleContextMenu={props.handleContextMenu}
         />
     }
 

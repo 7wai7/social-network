@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import MessagesUI from '../../ui/MessagesUI';
 import EventEmitter from '../../services/EventEmitter';
 import type { AttachedFile } from '../../types/attachedFile';
+import type { File } from '../../types/file';
 
 type ContextType = {
     layoutEmitter: EventEmitter,
@@ -18,7 +19,10 @@ export default function Messages(): JSX.Element {
     const context = useOutletContext<ContextType>();
     const messagesEmitterRef = useRef(new EventEmitter());
 
+    const [textareaText, setTextareaText] = useState('');
     const [allMessages, setAllMessages] = useState<Message[]>([]);
+    const [editedMessage, setEditedMessage] = useState<Message | null>(null);
+    const [editedMessageSelectedFilesToDelete, setEditedMessageSelectedFilesToDelete] = useState<File[]>([]);
     const [queryVersion, setQueryVersion] = useState(Date.now());
 
 
@@ -38,8 +42,6 @@ export default function Messages(): JSX.Element {
         },
         enabled: !!context.selectedChat && hasMoreMessages,
     });
-
-
 
     useEffect(() => {
         if (data?.length && data.length > 0) {
@@ -68,7 +70,13 @@ export default function Messages(): JSX.Element {
         };
 
         const onDeleteMessage = (deletedMessage: Message) => {
-            if (deletedMessage.chat?.id === context.selectedChat?.id) setAllMessages(prev => prev.filter(m => m.id !== deletedMessage.id));
+            if (deletedMessage.chat_id === context.selectedChat?.id) setAllMessages(prev => prev.filter(m => m.id !== deletedMessage.id));
+        }
+
+        const onUpdateMessage = (updatedMessage: Message) => {
+            console.log('updated message', updatedMessage);
+
+            setAllMessages(prev => prev.map(m => m.id === updatedMessage.id ? { ...m, ...updatedMessage } : m))
         }
 
         const onChatMessageError = (err: any) => {
@@ -86,6 +94,7 @@ export default function Messages(): JSX.Element {
 
         socketRef.current.on('chat-message', onChatMessage);
         socketRef.current.on('delete-message', onDeleteMessage);
+        socketRef.current.on('update-message', onUpdateMessage);
         socketRef.current.on('chat-message-error', onChatMessageError);
         socketRef.current.on('delete-message-error', onDeleteMessageError);
         messagesEmitterRef.current.on('get-attached-files', onGetAttachedFiles);
@@ -93,6 +102,7 @@ export default function Messages(): JSX.Element {
         return () => {
             socketRef.current.off('chat-message', onChatMessage);
             socketRef.current.off('delete-message', onDeleteMessage);
+            socketRef.current.off('update-message', onUpdateMessage);
             socketRef.current.off('chat-message-error', onChatMessageError);
             socketRef.current.off('delete-message-error', onDeleteMessageError);
             messagesEmitterRef.current.on('get-attached-files', onGetAttachedFiles);
@@ -109,7 +119,7 @@ export default function Messages(): JSX.Element {
                 sendMessage();
             } else if ((e.code === 'Enter' || e.keyCode === 13) && e.ctrlKey) {
                 // перейти на нову строку
-                textarea.value += '\n'
+                setTextareaText(prev => prev + '\n');
             }
         };
 
@@ -169,38 +179,74 @@ export default function Messages(): JSX.Element {
 
         console.log(`Send message to ${chat.title || chat.other_user_login}`)
 
-        const formData = new FormData();
-        attachedFilesRef.current.forEach(({ file, url }) => {
-            formData.append('files', file);
-            URL.revokeObjectURL(url)
-        });
+        const sendMessageData = (files: File[] = []) => {
+            const filesToDeleteIds = editedMessage
+                ? editedMessageSelectedFilesToDelete.map(f => f.id)
+                : [];
 
-        fetchFiles(formData)
-            .then(data => {
-                const newMessage = {
-                    chat_id: chat?.id,
-                    recipient_id: chat?.other_user_id,
-                    text: message,
-                    files: data
-                }
-                console.log('Message:', newMessage);
 
+            const newMessage = {
+                id: editedMessage?.id,
+                chat_id: chat?.id,
+                recipient_id: chat?.other_user_id,
+                text: message,
+                files,
+                filesToDeleteIds
+            }
+            console.log('Message:', newMessage);
+
+            if (editedMessage) {
+                socket.emit("update-message", newMessage);
+            } else
                 socket.emit("chat-message", newMessage);
 
 
-                if (textarea) {
-                    textarea.value = '';
-                    textarea.style.height = 'auto';
-                    textarea.style.height = textarea.scrollHeight + 'px';
-                }
+            if (textarea) {
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
+            }
 
-                messagesEmitterRef.current.emit('set-attached-files', []);
-            })
-            .catch((error) => console.error('Помилка при завантаженні файлів:', error));
+            setTextareaText('');
+            setEditedMessage(null);
+            setEditedMessageSelectedFilesToDelete([]);
+            messagesEmitterRef.current.emit('set-attached-files', []);
+        }
+
+        if (attachedFilesRef.current.length > 0 || editedMessageSelectedFilesToDelete.length > 0) {
+            const formData = new FormData();
+            attachedFilesRef.current.forEach(({ file, url }) => {
+                formData.append('files', file);
+                URL.revokeObjectURL(url)
+            });
+
+            const urls = editedMessageSelectedFilesToDelete.map(f => f.url);
+            formData.append('filesToDeleteUrls', JSON.stringify(urls));
+
+
+            fetchFiles(formData)
+                .then(data => {
+                    sendMessageData(data);
+                })
+                .catch((error) => console.error('Помилка при завантаженні файлів:', error));
+        } else sendMessageData();
     };
 
     const deleteMessage = (id: number) => {
         socketRef.current.emit('delete-message', { id });
+    }
+
+    const editMessage = (m: Message) => {
+        if (m.chat_id !== context.selectedChat?.id) return;
+
+        setEditedMessage(m);
+        setTextareaText(m.text);
+        setEditedMessageSelectedFilesToDelete([]);
+    }
+
+    const cancelEditingMessage = () => {
+        setEditedMessage(null);
+        setTextareaText('');
+        setEditedMessageSelectedFilesToDelete([]);
     }
 
     return <MessagesUI
@@ -208,10 +254,17 @@ export default function Messages(): JSX.Element {
         messagesEmitter={messagesEmitterRef.current}
         messagesWrapperRef={messagesWrapperRef}
         textareaRef={textareaRef}
+        textareaText={textareaText}
+        setTextareaText={setTextareaText}
         selectedChat={context.selectedChat}
         allMessages={allMessages}
+        editedMessage={editedMessage}
+        editedMessageSelectedFilesToDelete={editedMessageSelectedFilesToDelete}
+        setEditedMessageSelectedFilesToDelete={setEditedMessageSelectedFilesToDelete}
+        cancelEditingMessage={cancelEditingMessage}
         onScroll={onScroll}
         sendMessage={sendMessage}
         deleteMessage={deleteMessage}
+        editMessage={editMessage}
     />
 }
