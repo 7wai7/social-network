@@ -6,6 +6,7 @@ import { Comment } from 'src/models/comments.model';
 import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class CommentsService {
@@ -15,11 +16,17 @@ export class CommentsService {
     ) { }
 
 
-    async getCommentsByPostId(id: number, limit: number = 20, offset: number = 0) {
+    async getCommentsByPostId(id: number, limit: number = 20, cursor?: string) {
+        const where: any = {
+            post_id: id
+        };
+
+        if (cursor) {
+            where.createdAt = { [Op.lt]: cursor };
+        }
+
         return await this.commentModel.findAll({
-            where: {
-                post_id: id
-            },
+            where,
             include: [
                 {
                     model: CommentFile,
@@ -28,7 +35,6 @@ export class CommentsService {
             ],
             order: [['createdAt', 'DESC']],
             limit,
-            offset,
         })
     }
 

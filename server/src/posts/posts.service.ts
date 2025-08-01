@@ -6,7 +6,7 @@ import { PostFiles } from 'src/models/postFiles.model';
 import { User } from 'src/models/users.model';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
 import { StorageService } from 'src/storage/storage.service';
-import { literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Files } from 'src/models/files.model';
 
@@ -31,10 +31,16 @@ export class PostsService {
     }
 
     async getUserPosts(user_id: number, limit: number = 20, cursor?: string) {
+        const where: any = {
+            user_id
+        };
+
+        if (cursor) {
+            where.createdAt = { [Op.lt]: cursor };
+        }
+
         return await this.postsModel.findAll({
-            where: {
-                user_id
-            },
+            where,
             include: [
                 {
                     model: User,
@@ -53,8 +59,15 @@ export class PostsService {
 
     }
 
-    async getNewsFeed(userId: number, limit: number = 20, offset: number = 0) {
+    async getNewsFeed(userId: number, limit: number = 20, cursor?: string) {
+        const where: any = {};
+
+        if (cursor) {
+            where.createdAt = { [Op.lt]: cursor };
+        }
+
         return await this.postsModel.findAll({
+            where,
             include: [
                 {
                     model: User,
@@ -69,13 +82,14 @@ export class PostsService {
                     }],
                 },
                 {
-                    model: PostFiles,
+                    model: Files,
                     as: 'files',
+                    through: { attributes: [] },
+                    required: false
                 }
             ],
             order: [['createdAt', 'DESC']],
             limit,
-            offset,
         });
     }
 
@@ -114,71 +128,6 @@ export class PostsService {
             await transaction.rollback();
             throw new HttpException('Error create post: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // if (!postDto.text && files.length === 0) {
-        //     throw new HttpExceptionCode(
-        //         [{ message: 'Post must contain either text or at least one file', code: 'NO_CONTENT' }],
-        //         HttpStatus.BAD_REQUEST
-        //     );
-        // }
-
-        // if (files.length > 10) {
-        //     throw new HttpExceptionCode(
-        //         [{ message: 'Too many files', code: 'TOO_MANY_FILES' }],
-        //         HttpStatus.BAD_REQUEST
-        //     );
-        // }
-
-        // if (files.some(f => f.size > 10 * 1024 * 1024)) {
-        //     throw new HttpExceptionCode(
-        //         [{ message: 'Too big files', code: 'TOO_BIG_FILES' }],
-        //         HttpStatus.BAD_REQUEST
-        //     );
-        // }
-
-        // return await this.postsModel.create(postDto);
-
-        // try {
-        //     for (const file of files) {
-        //         const { url, filename } = await this.storageService.uploadFile(file);
-
-        //         await this.postFilesModel.create({
-        //             post_id: plainPost.id,
-        //             originalname: file.originalname,
-        //             filename,
-        //             mimetype: file.mimetype,
-        //             url,
-        //         });
-        //     }
-
-        //     return true;
-        // } catch (error) {
-        //     console.error('File upload error:', error);
-
-        //     // Rollback
-        //     await this.postFilesModel.destroy({ where: { post_id: plainPost.id } });
-        //     await post.destroy();
-
-        //     throw new HttpExceptionCode(
-        //         [{ message: "Uploading error", code: "UPLOAD_ERROR" }],
-        //         HttpStatus.INTERNAL_SERVER_ERROR
-        //     );
-        // }
     }
 
     async deletePost(postId: number) {
@@ -226,14 +175,14 @@ export class PostsService {
             // Видаляєм файли
             for (const file of files) {
                 const filename = file.url.split('/').pop();
-                if(filename) await this.storageService.deleteFile(filename);
+                if (filename) await this.storageService.deleteFile(filename);
             }
 
             await transaction.commit();
             return plainPost;
         } catch (error) {
             console.log(error);
-            
+
             await transaction.rollback();
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
