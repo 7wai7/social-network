@@ -29,7 +29,7 @@ export class StorageService {
         if (files.some(f => f.size > 10 * 1024 * 1024)) {
             throw new HttpExceptionCode(
                 [{ message: 'Too big files', code: 'TOO_BIG_FILES' }],
-                HttpStatus.BAD_REQUEST
+                HttpStatus.PAYLOAD_TOO_LARGE
             );
         }
 

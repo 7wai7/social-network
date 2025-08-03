@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import * as cookieParser from 'cookie-parser';
 import { HttpException, HttpStatus, ValidationError, ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 dotenv.config();
 
 
@@ -48,6 +49,21 @@ async function bootstrap() {
 			throw new HttpException({ errors: formatted }, HttpStatus.BAD_REQUEST);
 		}
 	}));
+
+
+	const config = new DocumentBuilder()
+		.setTitle('Створення соц-мережі')
+		.setDescription('Документація REST API')
+		.setVersion('1.0.0')
+		.addCookieAuth('token', {
+			type: 'http',
+			in: 'cookie',
+			scheme: 'bearer'
+		})
+		.build()
+
+	const document = SwaggerModule.createDocument(app, config);
+	SwaggerModule.setup('/api/docs', app, document);
 
 	await app.listen(process.env.PORT ?? 3000, () => {
 		console.log("Server started")

@@ -1,7 +1,7 @@
 import { useEffect, useState, type JSX } from 'react';
 import type { Profile } from '../../types/profile';
 import type { Post } from '../../types/post';
-import { fetchDeletePost, fetchProfile, fetchUserPosts } from '../../services/api';
+import { fetchDeletePost, fetchFollow, fetchProfile, fetchUserPosts } from '../../services/api';
 import ProfileUI from '../../ui/ProfileUI';
 import { useOutletContext, useParams } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
@@ -54,6 +54,7 @@ export default function Profile(): JSX.Element {
         };
     }, [profile])
 
+
     const handleDeletePost = async (postId: number) => {
         try {
             fetchDeletePost(postId)
@@ -66,12 +67,23 @@ export default function Profile(): JSX.Element {
         }
     };
 
+    const onClickFollowBtn = () => {
+        if(!profile) return;
+
+        fetchFollow(profile.user.id)
+            .then(data => {
+                console.log(data);
+                
+            })
+    }
+
     return <ProfileUI
         loadingProfile={loadingProfile}
         profile={profile}
         isOwnProfile={isOwnProfile}
         loadingPosts={loadingPosts}
         posts={posts}
+        onClickFollowBtn={onClickFollowBtn}
         handleDeletePost={handleDeletePost}
     />
 }

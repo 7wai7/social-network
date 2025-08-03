@@ -33,6 +33,7 @@
     position: relative;
 }
 
+.profile-block .follow-btn,
 .profile-block .logout-btn {
     position: absolute;
     top: -50px;

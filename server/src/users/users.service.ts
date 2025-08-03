@@ -4,13 +4,12 @@ import { Op, UniqueConstraintError } from 'sequelize';
 import { RegisterUserDto } from 'src/dto/register-user.dto';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
 import { Follow } from 'src/models/follow.model';
+import { Post } from 'src/models/posts.model';
 import { User } from 'src/models/users.model';
-import { PostsService } from 'src/posts/posts.service';
 
 @Injectable()
 export class UsersService {
     constructor(
-        private readonly postsService: PostsService,
         @InjectModel(User) private userModel: typeof User,
         @InjectModel(Follow) private followModel: typeof Follow
     ) { }
@@ -51,7 +50,16 @@ export class UsersService {
     }
 
     async getUserProfileByLogin(login: string) {
-        const user = await this.userModel.findOne({ where: { login } });
+        const user = await this.userModel.findOne(
+            {
+                where: { login },
+                include: [
+                    { model: User, as: 'followers' },
+                    { model: User, as: 'following' },
+                    { model: Post, as: 'posts' }
+                ]
+            }
+        );
         if (!user) {
             throw new HttpExceptionCode([{
                 message: "User not found",
@@ -60,17 +68,15 @@ export class UsersService {
         }
 
         const plainUser = user.get({ plain: true });
-        const userPostsCount = await this.postsService.getUserPostsCount(plainUser.id);
-
 
         return {
             user: plainUser,
             about: null,
             bannerUrl: "bannerUrl",
             avatarUrl: "avatarUrl",
-            following: 0,
-            followers: 0,
-            postsNumber: userPostsCount
+            following: plainUser.following.length,
+            followers: plainUser.followers.length,
+            postsNumber: plainUser.posts.length
         }
     }
 
@@ -111,7 +117,7 @@ export class UsersService {
 
             // Інші типи помилок (БД недоступна, неправильні поля тощо)
             console.error(error);
-            throw new HttpException('Could not follow user', HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

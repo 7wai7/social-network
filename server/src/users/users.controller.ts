@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.quard';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/models/users.model';
+import { ApiBearerAuth, ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
@@ -11,24 +12,123 @@ export class UsersController {
         @InjectModel(User) private userModel: typeof User
     ) { }
 
+
+    @ApiOperation({
+        summary: 'Отримати дані поточного користувача',
+        description: 'Повертає інформацію про авторизованого користувача'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Дані користувача успішно отримані',
+        schema: {
+            type: 'object',
+            properties: {
+                id: { type: 'number', example: 1 },
+                login: { type: 'string', example: 'john_doe' },
+                email: { type: 'string', example: 'john.doe@gmail.com' },
+            }
+        }
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Користувач не авторизований',
+        schema: {
+            type: 'object',
+            properties: {
+                statusCode: { type: 'number', example: 401 },
+                message: { type: 'string', example: 'Unauthorized' }
+            }
+        }
+    })
+    @ApiCookieAuth('token')
     @UseGuards(JwtAuthGuard)
     @Get("/me")
     getMe(@Req() req) {
         return req.user;
     }
 
+
+
+    @ApiOperation({ 
+        summary: 'Перевірити статус авторизації',
+        description: 'Перевіряє чи користувач авторизований та повертає true якщо так'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Користувач авторизований',
+        schema: {
+            type: 'boolean',
+            example: true
+        }
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Користувач не авторизований',
+        schema: {
+            type: 'object',
+            properties: {
+                statusCode: { type: 'number', example: 401 },
+                message: { type: 'string', example: 'Unauthorized' }
+            }
+        }
+    })
+    @ApiOperation({ summary: 'Перевірити авторизованість користувача' })
+    @ApiResponse({ status: 200, type: Boolean })
     @UseGuards(JwtAuthGuard)
     @Get("/check-auth")
     checkAuthorised() {
         return true;
     }
 
+
+
+    @ApiOperation({ 
+        summary: 'Пошук користувачів за логіном',
+        description: 'Знаходить користувачів за частковим співпадінням логіну (крім поточного користувача)'
+    })
+    @ApiParam({
+        name: 'login',
+        description: 'Частина логіну для пошуку',
+        example: 'john',
+        type: 'string'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Список знайдених користувачів',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    id: { type: 'number', example: 1 },
+                    login: { type: 'string', example: 'john_doe' },
+                    email: { type: 'string', example: 'john@gmail.com' }
+                }
+            }
+        }
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Користувач не авторизований'
+    })
     @UseGuards(JwtAuthGuard)
     @Get("/find/:login")
     findUsers(@Param('login') login: string, @Req() req) {
         return this.userService.findUsersByLogin(req.user.id, login);
     }
 
+
+
+
+    @ApiOperation({ 
+        summary: 'Пошук профіля користувача за логіном'
+    })
+    @ApiParam({
+        name: 'login',
+        description: 'Логін для пошуку',
+        example: 'john_doe',
+        type: 'string'
+    })
     @Get("/profile/:login")
     getUserProfile(@Param('login') login: string) {
         return this.userService.getUserProfileByLogin(login);
@@ -48,6 +148,49 @@ export class UsersController {
         return await this.userService.getFollowing(f_id);
     }
 
+
+
+    
+    @ApiOperation({ 
+        summary: 'Підписатися на користувача',
+        description: 'Створює підписку поточного користувача на вказаного користувача'
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'ID користувача, на якого потрібно підписатися',
+        example: 1,
+        type: 'number'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Успішно підписалися',
+        schema: {
+            type: 'object',
+            properties: {
+                success: { type: 'boolesan', example: 'true' }
+            }
+        }
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Некоректний ID або спроба підписатися на себе'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Користувач не авторизований'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Користувача для підписки не знайдено'
+    })
+    @ApiResponse({
+        status: 409,
+        description: 'Ви вже підписані на цього користувача'
+    })
+    @ApiResponse({
+        status: 500,
+        description: 'Server error'
+    })
     @UseGuards(JwtAuthGuard)
     @Post("follow/:id")
     async followUser(@Param('id') id: string, @Req() req) {
@@ -57,6 +200,31 @@ export class UsersController {
         return this.userService.followUser(req.user.id, following_id);
     }
 
+
+
+
+    
+    @ApiOperation({ 
+        summary: 'Відписатися від користувача',
+        description: 'Видаляє підписку поточного користувача і вказаного користувача'
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'ID користувача, від котрого потрібно відписатися',
+        example: 1,
+        type: 'number'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Успішно відписалися',
+        schema: {
+            type: 'object',
+            properties: {
+                success: { type: 'boolesan', example: 'true' }
+            }
+        }
+    })
+    @ApiCookieAuth('token')
     @UseGuards(JwtAuthGuard)
     @Delete("follow/:id")
     async unfollowUser(@Param('id') id: string, @Req() req) {

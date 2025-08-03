@@ -12,6 +12,7 @@ export default function Profile(
         isOwnProfile: boolean,
         loadingPosts: boolean,
         posts: Post[],
+        onClickFollowBtn: () => void,
         handleDeletePost: (postId: number) => void
     }
 ): JSX.Element {
@@ -48,14 +49,19 @@ export default function Profile(
                     </div>
                     <div className='meta'>
                         {
-                            props.isOwnProfile && (
-                                <button
+                            props.isOwnProfile
+                                ? <button
                                     className='logout-btn'
                                     onClick={() => logout()}
                                 >
                                     <span>Log out</span>
                                 </button>
-                            )
+                                : <button
+                                    className='follow-btn'
+                                    onClick={() => props.onClickFollowBtn()}
+                                >
+                                    <span>Follow</span>
+                                </button>
                         }
                         <span className='login'>{props.profile?.user.login}</span>
                         <span className='posts-number'>{props.profile?.postsNumber} posts</span>
