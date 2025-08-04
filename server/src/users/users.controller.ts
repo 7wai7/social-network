@@ -4,6 +4,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.quard';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/models/users.model';
 import { ApiBearerAuth, ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { UserDto } from 'src/dto/login-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -111,6 +112,7 @@ export class UsersController {
         status: 401,
         description: 'Користувач не авторизований'
     })
+    @ApiCookieAuth('token')
     @UseGuards(JwtAuthGuard)
     @Get("/find/:login")
     findUsers(@Param('login') login: string, @Req() req) {
@@ -134,6 +136,30 @@ export class UsersController {
         return this.userService.getUserProfileByLogin(login);
     }
 
+
+
+    
+
+    @ApiOperation({ 
+        summary: 'Пошук підписників користувача'
+    })
+    @ApiParam({
+        name: 'id',
+        example: '16',
+        type: 'number'
+    })
+    @ApiResponse({
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    id: { type: 'number', example: 1 },
+                    login: { type: 'string', example: 'john_doe' }
+                }
+            }
+        }
+    })
     @Get(":id/followers")
     async getFollowers(@Param('id') id: string) {
         const f_id = parseInt(id);
@@ -141,6 +167,27 @@ export class UsersController {
         return await this.userService.getFollowers(f_id);
     }
 
+
+    @ApiOperation({ 
+        summary: 'Пошук тих, на кого користувач підписався'
+    })
+    @ApiParam({
+        name: 'id',
+        example: '16',
+        type: 'number'
+    })
+    @ApiResponse({
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    id: { type: 'number', example: 1 },
+                    login: { type: 'string', example: 'john_doe' }
+                }
+            }
+        }
+    })
     @Get(":id/following")
     async getFollowing(@Param('id') id: string) {
         const f_id = parseInt(id);
@@ -191,6 +238,7 @@ export class UsersController {
         status: 500,
         description: 'Server error'
     })
+    @ApiCookieAuth('token')
     @UseGuards(JwtAuthGuard)
     @Post("follow/:id")
     async followUser(@Param('id') id: string, @Req() req) {

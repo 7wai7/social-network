@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ChatMessageDto } from 'src/dto/create-chat-message.dto';
+import { CreateMessageDto } from 'src/dto/create-message.dto';
 import { Chat } from 'src/models/chat.model';
 import { ChatParticipants } from 'src/models/chatParticipants.model';
 import * as fs from 'fs';
@@ -10,9 +10,10 @@ import { User } from 'src/models/users.model';
 import { Op, QueryTypes } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Files } from 'src/models/files.model';
-import { Messages } from 'src/models/messages.model';
+import { Messages, MessagesCreationAttrs } from 'src/models/messages.model';
 import { MessageFiles } from 'src/models/messageFiles.model';
 import { StorageService } from 'src/storage/storage.service';
+import { UpdateMessageDto } from 'src/dto/update-message.dto';
 
 @Injectable()
 export class ChatService {
@@ -111,7 +112,7 @@ export class ChatService {
     }
 
 
-    async createChatIfNotExists(message: ChatMessageDto) {
+    async createChatIfNotExists(message: CreateMessageDto) {
         if (message.user_id === message.recipient_id) throw new HttpException('Cannot create chat with yourself', HttpStatus.FORBIDDEN);
 
         const existingChat = await this.chatModel.findByPk(message.chat_id, { raw: true });
@@ -149,7 +150,7 @@ export class ChatService {
         return null;
     }
 
-    async createMessage(messageDto: ChatMessageDto) {
+    async createMessage(messageDto: CreateMessageDto) {
         if (!messageDto.chat_id) throw new HttpException('Chat is not defined', HttpStatus.BAD_REQUEST)
 
         if (!messageDto.text && !messageDto.files?.length) {
@@ -162,7 +163,11 @@ export class ChatService {
         const transaction = await this.sequelize.transaction();
 
         try {
-            const message = await this.messagesModel.create(messageDto, { transaction });
+            const message = await this.messagesModel.create({
+                user_id: messageDto.user_id,
+                chat_id: messageDto.chat_id,
+                text: messageDto.text
+            }, { transaction });
 
             if (messageDto.files?.length) {
                 const filesRaws = await this.filesModel.bulkCreate(messageDto.files, { transaction });
@@ -189,7 +194,7 @@ export class ChatService {
     }
 
 
-    async updateMessage(messageDto: ChatMessageDto) {
+    async updateMessage(messageDto: UpdateMessageDto) {
         const transaction = await this.sequelize.transaction();
 
         try {
@@ -233,7 +238,7 @@ export class ChatService {
         }
     }
 
-    async updateMessageByOwner(messageDto: ChatMessageDto, userId: number) {
+    async updateMessageByOwner(messageDto: UpdateMessageDto, userId: number) {
         if (!messageDto.id) throw new HttpException("Message id not correct", HttpStatus.BAD_REQUEST);
         const message = await this.messagesModel.findByPk(messageDto.id);
         if (!message) throw new HttpException("Message not found", HttpStatus.NOT_FOUND);

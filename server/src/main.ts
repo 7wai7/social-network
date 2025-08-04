@@ -57,8 +57,7 @@ async function bootstrap() {
 		.setVersion('1.0.0')
 		.addCookieAuth('token', {
 			type: 'http',
-			in: 'cookie',
-			scheme: 'bearer'
+			in: 'cookie'
 		})
 		.build()
 

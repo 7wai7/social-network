@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { PostDto } from 'src/dto/create-post.dto';
-import { Post } from 'src/models/posts.model';
+import { CreatePostDto, PostDto } from 'src/dto/create-post.dto';
+import { Post, PostsCreationAttrs } from 'src/models/posts.model';
 import { PostFiles } from 'src/models/postFiles.model';
 import { User } from 'src/models/users.model';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
@@ -30,7 +30,7 @@ export class PostsService {
         return posts.length;
     }
 
-    async getUserPosts(user_id: number, limit: number = 20, cursor?: string) {
+    async getUserPosts(user_id: number, cursor?: string, limit: number = 20) {
         const where: any = {
             user_id
         };
@@ -59,7 +59,7 @@ export class PostsService {
 
     }
 
-    async getNewsFeed(userId: number, limit: number = 20, cursor?: string) {
+    async getNewsFeed(userId: number, cursor?: string, limit: number = 20) {
         const where: any = {};
 
         if (cursor) {
@@ -93,7 +93,7 @@ export class PostsService {
         });
     }
 
-    async createPost(postDto: PostDto) {
+    async createPost(postDto: CreatePostDto) {
         const transaction = await this.sequelize.transaction();
 
         try {
@@ -179,7 +179,7 @@ export class PostsService {
             }
 
             await transaction.commit();
-            return plainPost;
+            return true;
         } catch (error) {
             console.log(error);
 

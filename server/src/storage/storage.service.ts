@@ -17,7 +17,7 @@ export class StorageService {
     }
 
     async uploadFiles(files: Array<Express.Multer.File>) {
-        if (files.length === 0) return;
+        if (files.length === 0) return [];
 
         if (files.length > 10) {
             throw new HttpExceptionCode(

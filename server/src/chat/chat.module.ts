@@ -10,9 +10,10 @@ import { Files } from 'src/models/files.model';
 import { Messages } from 'src/models/messages.model';
 import { MessageFiles } from 'src/models/messageFiles.model';
 import { StorageModule } from 'src/storage/storage.module';
+import { WebSocketDocsController } from './chat-docs.controller';
 
 @Module({
-    controllers: [ChatController],
+    controllers: [ChatController, WebSocketDocsController],
     providers: [ChatGateway, ChatService],
     imports: [
         SequelizeModule.forFeature([Chat, ChatParticipants, Messages, MessageFiles, Files]),

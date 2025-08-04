@@ -13,7 +13,6 @@ import type { File } from '../types/file';
 async function fetch(promise: Promise<AxiosResponse<any, any>>) {
 	try {
 		const response = await promise;
-		console.log(response.data);
 		return response.data;
 	} catch (err: any) {
 		if (err.response) {
@@ -97,7 +96,7 @@ export async function fetchPost(formData: FormData): Promise<boolean> {
 	return await fetch(api.post('/api/posts', formData));
 }
 
-export async function fetchCreatePost(post: { text: string, files: File[] }): Promise<number> {
+export async function fetchCreatePost(post: { text: string, files?: File[] }): Promise<number> {
 	return await fetch(
 		api.post('/api/posts',
 			post,
@@ -108,6 +107,10 @@ export async function fetchCreatePost(post: { text: string, files: File[] }): Pr
 			}
 		)
 	);
+}
+
+export async function fetchDeletePost(id: number): Promise<boolean> {
+	return await fetch(api.delete(`/api/posts/${id}`));
 }
 
 export async function fetchFiles(formData: FormData): Promise<File[]> {
@@ -122,10 +125,6 @@ export async function fetchFollow(id: number): Promise<boolean> {
 
 export async function fetchUnfollow(id: number): Promise<boolean> {
 	return await fetch(api.delete(`/api/users/follow/${id}`));
-}
-
-export async function fetchDeletePost(id: number): Promise<boolean> {
-	return await fetch(api.delete(`/api/posts/${id}`));
 }
 
 export async function fetchUserChats(): Promise<Chat[]> {
@@ -144,21 +143,12 @@ export async function fetchFindUsersByLogin(login: string): Promise<ChatUser[]> 
 
 
 
-export async function fetchGetChatMessages(id: number | null, lastCursorId: number | null | undefined): Promise<Message[]> {
-	if (!id) throw new Error('Null!!!!');
-	return await fetch(api.get(`/api/chats/${id}/messages?${lastCursorId ? `lastCursorId=${lastCursorId}` : ''}`));
-}
-
-
-
-
-export async function fetchMessages(chatId: number | null | undefined, cursor?: string | null | undefined): Promise<any> {
-	if (!chatId) throw new Error('Null!!!!');
-	const response = await api.get(`/api/chats/${chatId}/messages`, {
-		params: {
-			before: cursor ?? undefined
-		}
-	});
-
-	return response.data as Message[];
+export async function fetchMessages(chatId: number, cursor?: string | null | undefined): Promise<Message[]> {
+	return await fetch(
+		api.get(`/api/chats/${chatId}/messages`, {
+			params: {
+				before: cursor ?? undefined
+			}
+		})
+	)
 }

@@ -37,8 +37,10 @@ export default function Messages(): JSX.Element {
     const { data } = useQuery({
         queryKey: ['chat-messages', queryVersion],
         queryFn: () => {
+            if(!context.selectedChat?.id) return;
+
             const lastMessage = allMessages.at(-1);
-            return fetchMessages(context.selectedChat?.id, lastMessage?.createdAt)
+            return fetchMessages(context.selectedChat.id, lastMessage?.createdAt)
         },
         enabled: !!context.selectedChat && hasMoreMessages,
     });

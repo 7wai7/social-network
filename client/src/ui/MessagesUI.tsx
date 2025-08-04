@@ -34,8 +34,6 @@ export default function MessagesUI(
 
 
     const renderMessagesByDate = (messages: Message[] | unknown): JSX.Element => {
-        console.count("renderMessagesByDate");
-
         if (!Array.isArray(messages)) return <></>
 
         const groupDays: Record<string, Message[]> = {};

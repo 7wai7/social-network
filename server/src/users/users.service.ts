@@ -81,17 +81,33 @@ export class UsersService {
     }
 
     async getFollowers(userId: number) {
-        const user = await this.userModel.findByPk(userId);
-        if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-        const followers = await user.$get('followers');
-        return followers;
+        const user = await this.userModel.findByPk(userId, {
+            include: [{
+                model: User,
+                as: 'followers',
+                attributes: ['id', 'login'],
+                through: { attributes: [] }
+            }]
+        });
+        const plainUser = user?.get({ plain: true });
+        if (!plainUser) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+        return plainUser.followers;
     }
 
     async getFollowing(userId: number) {
-        const user = await this.userModel.findByPk(userId);
-        if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-        const following = await user.$get('following');
-        return following;
+        const user = await this.userModel.findByPk(userId, {
+            include: [{
+                model: User,
+                as: 'following',
+                attributes: ['id', 'login'],
+                through: { attributes: [] }
+            }]
+        });
+        const plainUser = user?.get({ plain: true });
+        if (!plainUser) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+        return plainUser.following;
     }
 
     async followUser(follower_id: number, following_id: number) {

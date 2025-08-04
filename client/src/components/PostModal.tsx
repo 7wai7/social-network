@@ -3,6 +3,7 @@ import { fetchCreatePost, fetchFiles } from "../services/api";
 import PostModalUI from "../ui/PostModalUI";
 import EventEmitter from "../services/EventEmitter";
 import type { AttachedFile } from "../types/attachedFile";
+import type { File } from "../types/file";
 
 const PostModal = (
     props: {
@@ -43,22 +44,28 @@ const PostModal = (
     const publishPost = () => {
         if (!text.trim() && attachedFilesRef.current.length == 0) return;
 
-        const formData = new FormData();
-        attachedFilesRef.current.forEach(({ file, url }) => {
-            formData.append('files', file);
-            URL.revokeObjectURL(url)
-        });
+        const publish = (files?: File[]) => {
+            fetchCreatePost({ text, files })
+                .then(post => {
+                    props.layoutEmitter.emit('add-profile-post', post);
+                    props.layoutEmitter.emit('close-post-modal');
+                })
+                .catch((error) => console.error('Помилка при створенні поста:', error));
+        }
 
-        fetchFiles(formData)
-            .then(data => {
-                fetchCreatePost({ text, files: data })
-                    .then(post => {
-                        props.layoutEmitter.emit('add-profile-post', post);
-                        props.layoutEmitter.emit('close-post-modal');
-                    })
-                    .catch((error) => console.error('Помилка при створенні поста:', error));
-            })
-            .catch((error) => console.error('Помилка при завантаженні файлів:', error));
+        if (attachedFilesRef.current.length > 0) {
+            const formData = new FormData();
+            attachedFilesRef.current.forEach(({ file, url }) => {
+                formData.append('files', file);
+                URL.revokeObjectURL(url)
+            });
+
+            fetchFiles(formData)
+                .then(data => {
+                    publish(data);
+                })
+                .catch((error) => console.error('Помилка при завантаженні файлів:', error));
+        } else publish();
     };
 
 

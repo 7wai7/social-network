@@ -1,12 +1,47 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { FileDto } from "./create-file.dto";
+import { CreateFileDto, FileDto } from "./create-file.dto";
+import { IsArray, IsNumber, IsOptional, IsString, MaxLength, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
+import { UserDto } from "./login-user.dto";
+
+export class CreatePostDto {
+    
+    @IsNumber()
+    @Type(() => Number)
+    readonly user_id: number;
+
+    @ApiProperty({
+        example: 'Мій перший пост у соціальній мережі!',
+        description: 'Текст поста',
+        maxLength: 5000
+    })
+    @IsString()
+    @MaxLength(5000)
+    readonly text: string;
+
+    @ApiProperty({
+        type: [CreateFileDto],
+        description: 'Файли для прикріплення до поста',
+        required: false
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateFileDto)
+    readonly files?: CreateFileDto[];
+}
+
+
 
 export class PostDto {
     @ApiProperty({ example: 10 })
-    readonly id?: number;
+    readonly id: number;
 
     @ApiProperty({ example: 1 })
     readonly user_id: number;
+
+    @ApiProperty({ type: UserDto })
+    readonly user: UserDto;
 
     @ApiProperty({ example: 'Мій перший пост' })
     readonly text: string;
@@ -28,8 +63,8 @@ export class PostDto {
             },
         ]
     })
-    readonly files?: FileDto[];
+    readonly files: FileDto[];
 
     @ApiProperty({ example: '2024-01-15T10:30:00.000Z' })
-    readonly createdAt?: Date;
+    readonly createdAt: Date;
 }

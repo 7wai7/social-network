@@ -4,6 +4,7 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.quard';
 import { ApiBody, ApiConsumes, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateFileDto } from 'src/dto/create-file.dto';
 
 @Controller('storage')
 export class StorageController {
@@ -31,7 +32,7 @@ export class StorageController {
                 filesToDeleteUrls: {
                     type: 'string',
                     description: 'JSON рядок з масивом URL файлів для видалення',
-                    example: '["https://storage.googleapis.com/bucket/1a6fde06-9b92-4065-9c00-a713bdff8f7d.txt", "https://storage.googleapis.com/bucket/7bbbed7c-fdb8-41db-a704-c3b4d42c6b58.png"]'
+                    example: ["https://storage.googleapis.com/bucket/1a6fde06-9b92-4065-9c00-a713bdff8f7d.txt", "https://storage.googleapis.com/bucket/7bbbed7c-fdb8-41db-a704-c3b4d42c6b58.png"]
                 }
             },
             required: ['files']
@@ -40,17 +41,7 @@ export class StorageController {
     @ApiResponse({
         status: 200,
         description: 'Файли успішно завантажені',
-        schema: {
-            type: 'array',
-            items: {
-                type: 'object',
-                properties: {
-                    originalname: { type: 'string', example: 'picture.png' },
-                    mimetype: { type: 'string', example: 'image/png' },
-                    url: { type: 'string', example: 'https://storage.googleapis.com/bucket/7bbbed7c-fdb8-41db-a704-c3b4d42c6b58.png' },
-                }
-            }
-        }
+        type: [CreateFileDto]
     })
     @ApiResponse({
         status: 400,

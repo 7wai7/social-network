@@ -3,7 +3,7 @@ import { User } from "./users.model";
 import { Files } from "./files.model";
 import { PostFiles } from "./postFiles.model";
 
-interface PostsCreationAttrs {
+export interface PostsCreationAttrs {
 	user_id: number;
 	text: string;
 }
@@ -14,12 +14,14 @@ export class Post extends Model<Post, PostsCreationAttrs> {
 	@Column({ type: DataType.INTEGER, allowNull: false })
 	user_id: number;
 
-	@BelongsTo(() => User, { as: 'user' })
-	user: User;
-
 	@Column({ type: DataType.STRING, allowNull: true })
 	text: string;
 
 	@BelongsToMany(() => Files, () => PostFiles)
 	files: Files[];
+
+
+
+	@BelongsTo(() => User, { as: 'user' })
+	user: User;
 }

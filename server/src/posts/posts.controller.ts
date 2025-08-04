@@ -3,11 +3,12 @@ import { PostsService } from './posts.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.quard';
 import { UsersService } from 'src/users/users.service';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
-import { FileDto } from 'src/dto/create-file.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/models/users.model';
-import { ApiBody, ApiCookieAuth, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
-import { PostDto } from 'src/dto/create-post.dto';
+import { ApiBody, ApiCookieAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { CreatePostDto, PostDto } from 'src/dto/create-post.dto';
+import { PostsCreationAttrs } from 'src/models/posts.model';
+import { CreateFileDto } from 'src/dto/create-file.dto';
 
 @Controller('/posts')
 export class PostsController {
@@ -58,10 +59,41 @@ export class PostsController {
     }
 
 
+
+
+    @ApiOperation({
+        summary: 'Завантаження новин для користувача',
+        description: 'Повертає стрічку новин з постами користувачів, на яких підписаний поточний користувач. Підтримує пагінацію через cursor-based pagination.'
+    })
+    @ApiQuery({
+        name: 'cursor',
+        description: 'Cursor для пагінації (дата створення останнього поста з попередньої сторінки)',
+        required: false,
+        type: 'string',
+        example: '2024-01-15T10:30:00.000Z',
+        format: 'date-time'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Стрічка новин успішно завантажена',
+        type: [PostDto]
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Користувач не авторизований',
+        schema: {
+            type: 'object',
+            properties: {
+                statusCode: { type: 'number', example: 401 },
+                message: { type: 'string', example: 'Unauthorized' }
+            }
+        }
+    })
+    @ApiCookieAuth('token')
     @UseGuards(JwtAuthGuard)
     @Get('/news/feed')
-    async getNewsFeed(@Req() req) {
-        return await this.postsService.getNewsFeed(req.user.id);
+    async getNewsFeed(@Req() req, @Query('cursor') cursor?: string) {
+        return await this.postsService.getNewsFeed(req.user.id, cursor);
     }
 
 
@@ -74,27 +106,7 @@ export class PostsController {
     })
     @ApiBody({
         description: 'Дані для створення поста',
-        schema: {
-            type: 'object',
-            properties: {
-                text: {
-                    type: 'string',
-                    example: 'Перший пост'
-                },
-                files: {
-                    type: 'array',
-                    items: {
-                        type: 'object',
-                        properties: {
-                            originalname: { type: 'string', example: 'picture.png' },
-                            mimetype: { type: 'string', example: 'image/png' },
-                            url: { type: 'string', example: 'https://storage.googleapis.com/bucket/7bbbed7c-fdb8-41db-a704-c3b4d42c6b58.png' },
-                        }
-                    },
-                    description: 'Масив файлів для поста'
-                }
-            }
-        }
+        type: CreatePostDto
     })
     @ApiResponse({
         status: 201,
@@ -106,14 +118,66 @@ export class PostsController {
     @UseGuards(JwtAuthGuard)
     async createPost(
         @Req() req,
-        @Body() body: { text: string, files: FileDto[] }
+        @Body() body: { text: string, files?: CreateFileDto[]}
     ) {
         return await this.postsService.createPost({
+            ...body,
             user_id: req.user.id,
-            ...body
         })
     }
 
+
+
+    @ApiOperation({
+        summary: 'Видалення поста',
+        description: 'Видаляє пост по ip'
+    })
+    @ApiParam({
+        name: 'id',
+        example: 10,
+        type: 'string'
+    })
+    @ApiResponse({
+        status: 204,
+        example: true
+    })
+    @ApiResponse({
+        status: 400,
+        schema: {
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Not correct id' }
+            }
+        }
+    })
+    @ApiResponse({
+        status: 403,
+        schema: {
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Forbidden: not your message' }
+            }
+        }
+    })
+    @ApiResponse({
+        status: 404,
+        schema: {
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Post not found' }
+            }
+        }
+    })
+    @ApiResponse({
+        status: 500,
+        schema: {
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Server error' }
+            }
+        }
+    })
+    @ApiCookieAuth('token')
     @Delete("/:id")
     @UseGuards(JwtAuthGuard)
     deletePost(@Req() req, @Param('id') id: string) {

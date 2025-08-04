@@ -4,10 +4,10 @@ import { Chat } from "./chat.model";
 import { Files } from "./files.model";
 import { MessageFiles } from "./messageFiles.model";
 
-interface MessagesCreationAttrs {
+export interface MessagesCreationAttrs {
 	user_id: number; // власник повідомлення
 	chat_id: number // чат де надіслано повідомлення
-	text: string;
+	text?: string;
 }
 
 @Table({ tableName: 'messages' })
