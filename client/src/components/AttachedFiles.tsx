@@ -3,6 +3,7 @@ import "./AttachedFilesPreview.css";
 import React from "react";
 import type { File } from "../types/file";
 import { IMAGE_EXTS, VIDEO_EXTS } from "../other/constants";
+import { downloadFile, formatBytes } from "../other/globals";
 
 export default React.memo(function AttachedFiles(
     props: {
@@ -27,7 +28,7 @@ export default React.memo(function AttachedFiles(
         )
     }
 
-    const FileElementPreview = ({ filename }: { filename: string }): JSX.Element => {
+    const FileElementPreview = ({ file }: { file: File }): JSX.Element => {
         return (
             <div className="file-preview">
                 <div className="file-icon">
@@ -39,7 +40,16 @@ export default React.memo(function AttachedFiles(
                         </path>
                     </svg>
                 </div>
-                <span className="file-name">{filename}</span>
+                <span className="file-name">{file.originalname} <span className='file-size'> ({formatBytes(file.size)})</span></span>
+                <button className='download-file-btn' onClick={() => downloadFile(file.url, file.originalname)}>
+                    <svg
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="#fff">
+                        <path d="M13 3v12.294l2.647-2.647.707.707-3.853 3.854-3.854-3.854.707-.707L12 15.292V3zM6 21h13v-1H6z"></path>
+                        <path fill="none" d="M0 0h24v24H0z"></path>
+                    </svg>
+                </button>
             </div>
         )
     }
@@ -60,7 +70,7 @@ export default React.memo(function AttachedFiles(
             } else if (VIDEO_EXTS.includes(ext)) {
                 mediaElements.push(<VideoElementPreview key={file.id} url={file.url} />);
             } else {
-                filesElements.push(<FileElementPreview key={file.id} filename={file.originalname} />);
+                filesElements.push(<FileElementPreview key={file.id} file={file} />);
             }
         })
 

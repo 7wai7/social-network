@@ -23,4 +23,10 @@ export class Follow extends Model<Follow, FollowCreationAttrs> {
 	@ForeignKey(() => User)
 	@Column({ type: DataType.INTEGER, allowNull: false })
 	following_id: number; // той, на кого підписуються
+
+    @BelongsTo(() => User, { as: 'follower' })
+	follower: User;
+
+    @BelongsTo(() => User, { as: 'following' })
+	following: User;
 }

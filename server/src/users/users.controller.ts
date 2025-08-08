@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/models/users.model';
 import { ApiBearerAuth, ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { UserDto } from 'src/dto/login-user.dto';
+import { UserProfileDto } from 'src/dto/user-profile.dto';
 
 @Controller('users')
 export class UsersController {
@@ -131,9 +132,14 @@ export class UsersController {
         example: 'john_doe',
         type: 'string'
     })
+    @ApiResponse({
+        type: UserProfileDto
+    })
+    @ApiCookieAuth('token')
+    @UseGuards(JwtAuthGuard)
     @Get("/profile/:login")
-    getUserProfile(@Param('login') login: string) {
-        return this.userService.getUserProfileByLogin(login);
+    async getUserProfile(@Param('login') login: string, @Req() req) {
+        return await this.userService.getUserProfileByLogin(login, req.user.id);
     }
 
 

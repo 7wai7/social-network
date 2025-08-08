@@ -2,6 +2,7 @@ import { Body, HttpException, HttpStatus, Injectable, Req } from '@nestjs/common
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, UniqueConstraintError } from 'sequelize';
 import { RegisterUserDto } from 'src/dto/register-user.dto';
+import { UserProfileDto } from 'src/dto/user-profile.dto';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
 import { Follow } from 'src/models/follow.model';
 import { Post } from 'src/models/posts.model';
@@ -49,7 +50,7 @@ export class UsersService {
         })
     }
 
-    async getUserProfileByLogin(login: string) {
+    async getUserProfileByLogin(login: string, currentUserId: number) {
         const user = await this.userModel.findOne(
             {
                 where: { login },
@@ -60,8 +61,11 @@ export class UsersService {
                 ]
             }
         );
+
+
         if (!user) {
             throw new HttpExceptionCode([{
+                field: 'login',
                 message: "User not found",
                 code: "LOGIN_INVALID"
             }], HttpStatus.BAD_REQUEST);
@@ -69,15 +73,23 @@ export class UsersService {
 
         const plainUser = user.get({ plain: true });
 
-        return {
-            user: plainUser,
-            about: null,
+
+        const profile: UserProfileDto = {
+            user: {
+                id: plainUser.id,
+                login: plainUser.login
+            },
+            about: undefined,
             bannerUrl: "bannerUrl",
             avatarUrl: "avatarUrl",
-            following: plainUser.following.length,
-            followers: plainUser.followers.length,
-            postsNumber: plainUser.posts.length
+            followingCount: plainUser.following.length,
+            followersCount: plainUser.followers.length,
+            postsCount: plainUser.posts.length,
+            isOwnProfile: currentUserId === plainUser.id,
+            isFollowing: plainUser.followers.some(f => f.id === currentUserId)
         }
+
+        return profile;
     }
 
     async getFollowers(userId: number) {
@@ -122,22 +134,33 @@ export class UsersService {
             throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         }
 
+        const alreadyFollowing = await this.followModel.findOne({
+            where: { follower_id, following_id }
+        })
+
+
         try {
-            await this.followModel.create({ follower_id, following_id });
-            return { success: true }
-        } catch (error) {
-            if (error instanceof UniqueConstraintError) {
-                // помилка, якщо індекс порушено
-                throw new HttpException('Already following this user', HttpStatus.CONFLICT);
+            if (alreadyFollowing) {
+                await alreadyFollowing.destroy();
+            } else {
+                await this.followModel.create({ follower_id, following_id });
             }
 
-            // Інші типи помилок (БД недоступна, неправильні поля тощо)
+            return {
+                following: !alreadyFollowing, // true або false
+                userId: following_id
+            }
+        } catch (error) {
             console.error(error);
             throw new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     async unfollowUser(follower_id: number, following_id: number) {
+        if (follower_id === following_id) {
+            throw new HttpException('Cannot unfollow yourself', HttpStatus.BAD_REQUEST);
+        }
+
         await this.followModel.destroy({
             where: { follower_id, following_id },
         });

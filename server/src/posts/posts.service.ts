@@ -1,12 +1,11 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { CreatePostDto, PostDto } from 'src/dto/create-post.dto';
-import { Post, PostsCreationAttrs } from 'src/models/posts.model';
+import { CreatePostDto } from 'src/dto/create-post.dto';
+import { Post } from 'src/models/posts.model';
 import { PostFiles } from 'src/models/postFiles.model';
 import { User } from 'src/models/users.model';
-import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
 import { StorageService } from 'src/storage/storage.service';
-import { literal, Op } from 'sequelize';
+import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Files } from 'src/models/files.model';
 
@@ -44,7 +43,8 @@ export class PostsService {
             include: [
                 {
                     model: User,
-                    as: 'user'
+                    as: 'user',
+                    attributes: ['id', 'login']
                 },
                 {
                     model: Files,
@@ -61,7 +61,6 @@ export class PostsService {
 
     async getNewsFeed(userId: number, cursor?: string, limit: number = 20) {
         const where: any = {};
-
         if (cursor) {
             where.createdAt = { [Op.lt]: cursor };
         }
@@ -72,20 +71,24 @@ export class PostsService {
                 {
                     model: User,
                     as: 'user',
-                    include: [{
-                        model: User,
-                        as: 'followers',
-                        where: { id: userId },
-                        required: true,
-                        attributes: [],
-                        through: { attributes: [] },
-                    }],
+                    attributes: ['id', 'login'],
+                    required: true,
+                    include: [
+                        {
+                            model: User,
+                            as: 'followers',
+                            attributes: [],
+                            where: { id: userId },
+                            through: { attributes: [] },
+                            required: true,
+                        }
+                    ]
                 },
                 {
                     model: Files,
                     as: 'files',
                     through: { attributes: [] },
-                    required: false
+                    required: false,
                 }
             ],
             order: [['createdAt', 'DESC']],
@@ -93,7 +96,10 @@ export class PostsService {
         });
     }
 
+
     async createPost(postDto: CreatePostDto) {
+        console.log("postDto", postDto);
+        
         const transaction = await this.sequelize.transaction();
 
         try {

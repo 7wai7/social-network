@@ -4,6 +4,9 @@ import type { Post } from '../types/post';
 import { Link, useLocation } from 'react-router-dom';
 import Dropdown from './Dropdown';
 import { useUser } from '../contexts/UserContext';
+import { IMAGE_EXTS, VIDEO_EXTS } from '../other/constants';
+import { fetchUnfollow } from '../services/api';
+import { downloadFile, formatBytes, timeAgo } from '../other/globals';
 
 interface FeedPostProps {
 	post: Post,
@@ -11,9 +14,7 @@ interface FeedPostProps {
 }
 
 function handlePostFiles(post: Post): JSX.Element {
-	const mediaExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp4', 'webm', 'ogg'];
-	const imageExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-	const videoExts = ['mp4', 'webm', 'ogg'];
+	const mediaExts = [...IMAGE_EXTS, ...VIDEO_EXTS];
 
 	const mediaFiles = post.files.filter(file => {
 		const ext = file.originalname.split('.').pop()?.toLowerCase();
@@ -34,7 +35,7 @@ function handlePostFiles(post: Post): JSX.Element {
 						const ext = file.originalname.split('.').pop()?.toLowerCase();
 						if (!ext) return null;
 
-						if (ext && imageExts.includes(ext)) {
+						if (ext && IMAGE_EXTS.includes(ext)) {
 							return (
 								<img
 									key={index}
@@ -49,7 +50,7 @@ function handlePostFiles(post: Post): JSX.Element {
 							);
 						}
 
-						if (ext && videoExts.includes(ext)) {
+						if (ext && VIDEO_EXTS.includes(ext)) {
 							return (
 								<video
 									key={index}
@@ -69,11 +70,9 @@ function handlePostFiles(post: Post): JSX.Element {
 					{otherFiles.map((file, index) => {
 						// Файл іншого типу
 						return (
-							<a
+							<div
 								key={index}
-								href={file.url}
-								download={`${file.originalname}`}
-								className="file-link"
+								className="file"
 							>
 								<div className="file-icon">
 									<svg
@@ -84,8 +83,13 @@ function handlePostFiles(post: Post): JSX.Element {
 										</path>
 									</svg>
 								</div>
-								<span className="file-name">{file.originalname}</span>
-							</a>
+								<span className="file-name">{file.originalname}
+									<span className='file-size'> ({formatBytes(file.size)})</span>
+								</span>
+								<button className='download-file-btn' onClick={() => downloadFile(file.url, file.originalname)}>
+									Download
+								</button>
+							</div>
 						);
 					})}
 				</div>
@@ -104,9 +108,9 @@ const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 			{
 				!isProfilePage && (
 					<div className='avatar-side'>
-						<Link to={`/${post.user.login}`}>
+						<Link to={`/profile/${post.user.login}`}>
 							<img
-								src={`http://localhost:3000/avatars/${post.user.login}`}
+								src={`${post.user.avatarUrl}`}
 								alt={`${post.user.login}`}
 								className='avatar'
 								onError={(e) => {
@@ -124,12 +128,12 @@ const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 					<div className='post-meta'>
 						{
 							!isProfilePage && (
-								<Link to={`/${post.user.login}`}>
+								<Link to={`/profile/${post.user.login}`}>
 									<span className='login'>{post.user.login}</span>
 								</Link>
 							)
 						}
-						<span className='timestamp'>{new Date(post.createdAt).toLocaleString()}</span>
+						<span className='timestamp'>{timeAgo(post.createdAt)}</span>
 					</div>
 					<Dropdown
 						button={
@@ -153,8 +157,8 @@ const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 										onClick: () => {
 											console.log(`Unfollow ${post.user.login}`)
 
-											// fetchUnfollow(post.user.id)
-											// 	.catch(err => console.log(err))
+											fetchUnfollow(post.user.id)
+												.catch(err => console.log(err))
 										}
 									},
 									{
@@ -167,12 +171,13 @@ const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 						}
 					/>
 				</div>
+
 				<Link to={`/${post.user.login}/${post.id}`}>
 					<span className='text'>{post.text}</span>
 				</Link>
-				{post.files ? handlePostFiles(post) : ''}
+				{post.files.length ? handlePostFiles(post) : ''}
 			</div>
-		</div >
+		</div>
 	);
 };
 

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type FC, type JSX } from "react";
-import DropdownItem from "./DropdownItem";
 
 interface DropdownProps {
     button: JSX.Element;
@@ -11,30 +10,35 @@ interface DropdownProps {
 
 const Dropdown: FC<DropdownProps> = ({ button, items }) => {
     const [open, setOpen] = useState(false);
-	const dropdownRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
-	// Обробник кліку поза елементом
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-				setOpen(false);
-			}
-		};
+    // Обробник кліку поза елементом
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        };
 
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, []);
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="dropdown-menu-container" ref={dropdownRef}>
-            <button className="menu-trigger" onClick={() => setOpen(!open)}>
+            <button className="menu-trigger" onClick={(e) => {
+                e.preventDefault();
+                setOpen(!open);
+            }}>
                 {button}
             </button>
             <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`}>
                 {items.map((item, index) => (
-                    <DropdownItem key={index} text={item.text} onClick={item.onClick} />
+                    <button key={index} className="dropdown-item" onClick={() => item.onClick ? item.onClick() : {}}>
+                        <span>{item.text}</span>
+                    </button>
                 ))}
             </div>
         </div>

@@ -1,14 +1,47 @@
-import { Body, Controller, HttpException, HttpStatus, Param, Post, Query, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { StorageService } from './storage.service';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { HttpExceptionCode } from 'src/exceptions/HttpExceptionCode';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.quard';
-import { ApiBody, ApiConsumes, ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiCookieAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateFileDto } from 'src/dto/create-file.dto';
 
 @Controller('storage')
 export class StorageController {
     constructor(private readonly storageService: StorageService) { }
+
+
+    @ApiOperation({
+        summary: 'Завантаження файлів клієнту від Google Cloud Storage'
+    })
+    @ApiQuery({
+        name: 'filename',
+        description: 'Назва файлу в GCS получена із url файлу',
+        type: 'string',
+        example: '70749b53-12b7-445b-bf11-3213d12b1221.txt'
+    })
+    @ApiQuery({
+        name: 'originalname',
+        description: 'оригінальна назва файлу',
+        type: 'string',
+        example: 'cmd.txt'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Получити url для завантаження файлу',
+        type: 'string',
+    })
+    @ApiCookieAuth('token')
+    @Get('/download')
+    @UseGuards(JwtAuthGuard)
+    async getDownloadLink(
+        @Query('filename') filename: string,
+        @Query('originalname') originalname: string
+    ) {
+        return this.storageService.getDownloadLink(filename, originalname);
+    }
+
+
 
 
     @ApiOperation({
@@ -99,10 +132,4 @@ export class StorageController {
         return await this.storageService.uploadFiles(files);
     }
 
-    // @Post()
-    // @UseInterceptors(FileInterceptor('file'))
-    // async upload(@UploadedFile() file: Express.Multer.File) {
-    //     const url = await this.storageService.uploadFile(file);
-    //     return { url };
-    // }
 }

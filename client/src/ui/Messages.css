@@ -73,6 +73,7 @@
 }
 
 .message .time-ago {
+    margin-top: 10px;
     font-size: 12px;
     color: rgb(190, 190, 190);
 }

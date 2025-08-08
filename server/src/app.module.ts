@@ -34,6 +34,13 @@ dotenv.config();
 		}),
 		SequelizeModule.forRoot({
 			dialect: 'postgres',
+			dialectOptions: {
+				charset: 'utf8',
+			},
+			define: {
+				charset: 'utf8',
+				collate: 'utf8_general_ci', // для MySQL (ігнорується в PostgreSQL)
+			},
 			host: process.env.POSTGRES_HOST,
 			port: Number(process.env.POSTGRES_PORT),
 			username: process.env.POSTGRES_USER,

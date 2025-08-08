@@ -84,12 +84,20 @@ export async function fetchProfile(login: string): Promise<Profile> {
 	return await fetch(api.get(`/api/users/profile/${login}`));
 }
 
-export async function fetchUserPosts(login: string): Promise<Post[]> {
-	return await fetch(api.get(`/api/posts/user/${login}`));
+export async function fetchUserPosts(login: string, cursor?: string): Promise<Post[]> {
+	return await fetch(api.get(`/api/posts/user/${login}`, {
+		params: {
+			cursor
+		}
+	}));
 }
 
-export async function fetchFeed(): Promise<Post[]> {
-	return await fetch(api.get('/api/posts/news/feed'));
+export async function fetchFeed(cursor?: string): Promise<Post[]> {
+	return await fetch(api.get('/api/posts/news/feed', {
+		params: {
+			cursor
+		}
+	}));
 }
 
 export async function fetchPost(formData: FormData): Promise<boolean> {
@@ -119,7 +127,10 @@ export async function fetchFiles(formData: FormData): Promise<File[]> {
 
 
 
-export async function fetchFollow(id: number): Promise<boolean> {
+export async function fetchFollow(id: number): Promise<{
+	following: boolean,
+	userId: number
+}> {
 	return await fetch(api.post(`/api/users/follow/${id}`));
 }
 
@@ -143,11 +154,11 @@ export async function fetchFindUsersByLogin(login: string): Promise<ChatUser[]> 
 
 
 
-export async function fetchMessages(chatId: number, cursor?: string | null | undefined): Promise<Message[]> {
+export async function fetchMessages(chatId: number, cursor?: string): Promise<Message[]> {
 	return await fetch(
 		api.get(`/api/chats/${chatId}/messages`, {
 			params: {
-				before: cursor ?? undefined
+				cursor
 			}
 		})
 	)

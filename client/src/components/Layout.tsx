@@ -34,7 +34,7 @@ export default function Layout(): JSX.Element {
         }
 
         const onChatMessage = (newMessage: Message) => {
-            /* if(user && user.id !== newMessage.user.id) */ setLastChatMessage(newMessage);
+            if (user && user.id !== newMessage.user.id) setLastChatMessage(newMessage);
         };
 
         socketRef.current.on("connect", connect);
@@ -90,17 +90,20 @@ export default function Layout(): JSX.Element {
                 lastContextTargetRef.current = null;
             }
         };
-        document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
-    }, []);
 
-    // useEffect(() => {
-    //     const handleClickOutside = () => {
-    //         console.log(messagesList);
-    //     };
-    //     document.addEventListener('click', handleClickOutside);
-    //     return () => document.removeEventListener('click', handleClickOutside);
-    // }, [messagesList]);
+        const handleScroll = () => {
+            setMenuVisible(false);
+            lastContextTargetRef.current = null;
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        window.addEventListener('scroll', handleScroll, true); // `true` — захоплює події на всіх рівнях
+
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, []);
 
     return (
         <>

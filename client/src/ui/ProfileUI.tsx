@@ -9,7 +9,6 @@ export default function Profile(
     props: {
         loadingProfile: boolean,
         profile: Profile | undefined,
-        isOwnProfile: boolean,
         loadingPosts: boolean,
         posts: Post[],
         onClickFollowBtn: () => void,
@@ -20,7 +19,7 @@ export default function Profile(
 
     return (
         <>
-            {props.loadingProfile ? (
+            {props.loadingProfile || !props.profile ? (
                 <div className='loading'>
                     <div className='loader'></div>
                     <span>Loading...</span>
@@ -28,7 +27,7 @@ export default function Profile(
             ) : (
                 <div className='profile-block'>
                     <img
-                        src={`${props.profile?.bannerUrl}`}
+                        src={`${props.profile.bannerUrl}`}
                         alt="banner"
                         className='banner'
                         onError={(e) => {
@@ -38,7 +37,7 @@ export default function Profile(
                     />
                     <div className='profile-avatar-wrapper'>
                         <img
-                            src={`${props.profile?.avatarUrl}`}
+                            src={`${props.profile.avatarUrl}`}
                             alt="avatar"
                             className='avatar'
                             onError={(e) => {
@@ -49,7 +48,7 @@ export default function Profile(
                     </div>
                     <div className='meta'>
                         {
-                            props.isOwnProfile
+                            props.profile.isOwnProfile
                                 ? <button
                                     className='logout-btn'
                                     onClick={() => logout()}
@@ -60,20 +59,24 @@ export default function Profile(
                                     className='follow-btn'
                                     onClick={() => props.onClickFollowBtn()}
                                 >
-                                    <span>Follow</span>
+                                    {
+                                        props.profile.isFollowing
+                                            ? <span>Unfollow</span>
+                                            : <span>Follow</span>
+                                    }
                                 </button>
                         }
-                        <span className='login'>{props.profile?.user.login}</span>
-                        <span className='posts-number'>{props.profile?.postsNumber} posts</span>
+                        <span className='login'>{props.profile.user.login}</span>
+                        <span className='posts-number'>{props.profile.postsCount} posts</span>
                         <div className='follow-data'>
-                            <span className='number'>{props.profile?.following || 0}</span>
+                            <span className='number'>{props.profile.followingCount || 0}</span>
                             <span className='text'>following</span>
-                            <span className='number'>{props.profile?.followers || 0}</span>
+                            <span className='number'>{props.profile.followersCount || 0}</span>
                             <span className='text'>followers</span>
                         </div>
-                        {props.profile?.about && (
+                        {props.profile.about && (
                             <div className='about'>
-                                <span className='about-text'>{props.profile?.about}</span>
+                                <span className='about-text'>{props.profile.about}</span>
                                 <button className='show-more-btn'>Show more</button>
                             </div>
                         )}

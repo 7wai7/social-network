@@ -4,8 +4,8 @@ import type { Post } from '../../types/post';
 import { fetchDeletePost, fetchFollow, fetchProfile, fetchUserPosts } from '../../services/api';
 import ProfileUI from '../../ui/ProfileUI';
 import { useOutletContext, useParams } from 'react-router-dom';
-import { useUser } from '../../contexts/UserContext';
 import type EventEmitter from '../../services/EventEmitter';
+import { useQuery } from '@tanstack/react-query';
 
 type ContextType = {
     layoutEmitter: EventEmitter
@@ -16,35 +16,46 @@ export default function Profile(): JSX.Element {
 
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [profile, setProfile] = useState<Profile>();
-    const [isOwnProfile, setIsOwnProfile] = useState(false);
-    const [loadingPosts, setLoadingPosts] = useState(true);
+
     const [posts, setPosts] = useState<Post[]>([]);
+    const [hasMorePosts, setHasMorePosts] = useState(true);
+
     const { login } = useParams();
-    const { user } = useUser();
+
+    const { data, isLoading, refetch } = useQuery({
+        queryKey: ['load-profile-posts', login],
+        queryFn: () => {
+            if (!login) return;
+            const lasPost = posts.at(-1);
+            return fetchUserPosts(login, lasPost?.createdAt)
+        },
+        enabled: !!login && hasMorePosts
+    })
+
+    useEffect(() => {
+        if (data) setPosts(prev => [...prev, ...data]);
+
+        if (Array.isArray(data) && data.length === 0) {
+            setHasMorePosts(false);
+        }
+    }, [data])
 
     useEffect(() => {
         if (!login) return;
+        setLoadingProfile(true);
+        setPosts([]);
 
         fetchProfile(login)
             .then(data => {
                 setProfile(data);
-                setIsOwnProfile(data.user.id === user?.id);
                 setLoadingProfile(false);
             })
             .catch((error) => console.error('Помилка при завантаженні профілю:', error))
-
-
-        fetchUserPosts(login)
-            .then(data => {
-                setPosts(data);
-                setLoadingPosts(false)
-            })
-            .catch((error) => console.error('Помилка при завантаженні постів:', error))
     }, [login]);
 
     useEffect(() => {
         const onAddProfilePost = (post: Post) => {
-            if (user && user.id === profile?.user.id) setPosts(prev => [post, ...prev]);
+            if (profile?.isOwnProfile) setPosts(prev => [post, ...prev]);
         }
 
         context.layoutEmitter.on("add-profile-post", onAddProfilePost);
@@ -54,8 +65,24 @@ export default function Profile(): JSX.Element {
         };
     }, [profile])
 
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight;
+            const height = window.innerHeight;
+            if (scrollTop + height > scrollHeight - 200) {
+                refetch();
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
 
     const handleDeletePost = async (postId: number) => {
+        if (!profile?.isOwnProfile) return;
+
         try {
             fetchDeletePost(postId)
                 .then(() => {
@@ -68,20 +95,26 @@ export default function Profile(): JSX.Element {
     };
 
     const onClickFollowBtn = () => {
-        if(!profile) return;
+        if (!profile) return;
 
         fetchFollow(profile.user.id)
             .then(data => {
-                console.log(data);
-                
+                setProfile(prev => {
+                    if (!prev) return prev;
+
+                    return {
+                        ...prev,
+                        isFollowing: data.following
+                    };
+                });
+
             })
     }
 
     return <ProfileUI
         loadingProfile={loadingProfile}
         profile={profile}
-        isOwnProfile={isOwnProfile}
-        loadingPosts={loadingPosts}
+        loadingPosts={isLoading}
         posts={posts}
         onClickFollowBtn={onClickFollowBtn}
         handleDeletePost={handleDeletePost}

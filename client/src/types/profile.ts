@@ -5,7 +5,9 @@ export interface Profile {
     about: string,
 	bannerUrl: string,
 	avatarUrl: string,
-    following: number,
-    followers: number,
-	postsNumber: number
+    followingCount: number,
+    followersCount: number,
+	postsCount: number,
+	isOwnProfile: boolean,
+	isFollowing: boolean
 }

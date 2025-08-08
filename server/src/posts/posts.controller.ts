@@ -19,13 +19,21 @@ export class PostsController {
 
     @ApiOperation({
         summary: 'Отримати пости користувача за логіном',
-        description: 'Повертає список постів вказаного користувача'
+        description: 'Повертає список постів вказаного користувача, підтримує cursor-based пагінацію через createdAt поста'
     })
     @ApiParam({
         name: 'login',
         description: 'Логін користувача',
         example: 'john_doe',
         type: 'string'
+    })
+    @ApiQuery({
+        name: 'cursor',
+        description: 'Cursor для пагінації (дата останнього поста чату)',
+        required: false,
+        type: 'string',
+        example: '2024-01-15T10:30:00.000Z',
+        format: 'date-time'
     })
     @ApiResponse({
         status: 200,
@@ -45,7 +53,7 @@ export class PostsController {
         }
     })
     @Get("/user/:login")
-    async getUserPosts(@Param('login') login: string) {
+    async getUserPosts(@Param('login') login: string, @Query('cursor') cursor?: string) {
         const user = await this.userModel.findOne({ where: { login } });
         if (!user) {
             throw new HttpExceptionCode([{
@@ -55,7 +63,7 @@ export class PostsController {
         }
 
         const plainUser = user.get({ plain: true });
-        return await this.postsService.getUserPosts(plainUser.id);
+        return await this.postsService.getUserPosts(plainUser.id, cursor);
     }
 
 
