@@ -84,18 +84,20 @@ export async function fetchProfile(login: string): Promise<Profile> {
 	return await fetch(api.get(`/api/users/profile/${login}`));
 }
 
-export async function fetchUserPosts(login: string, cursor?: string): Promise<Post[]> {
+export async function fetchUserPosts(login: string, cursor?: string, limit: number = 20): Promise<Post[]> {
 	return await fetch(api.get(`/api/posts/user/${login}`, {
 		params: {
-			cursor
+			cursor,
+			limit
 		}
 	}));
 }
 
-export async function fetchFeed(cursor?: string): Promise<Post[]> {
+export async function fetchFeed(cursor?: string, limit: number = 20): Promise<Post[]> {
 	return await fetch(api.get('/api/posts/news/feed', {
 		params: {
-			cursor
+			cursor,
+			limit
 		}
 	}));
 }
@@ -154,11 +156,12 @@ export async function fetchFindUsersByLogin(login: string): Promise<ChatUser[]> 
 
 
 
-export async function fetchMessages(chatId: number, cursor?: string): Promise<Message[]> {
+export async function fetchMessages(chatId: number, cursor?: string, limit: number = 30): Promise<Message[]> {
 	return await fetch(
 		api.get(`/api/chats/${chatId}/messages`, {
 			params: {
-				cursor
+				cursor,
+				limit
 			}
 		})
 	)

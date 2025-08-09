@@ -4,15 +4,16 @@ import type { Profile } from "../types/profile";
 import { useUser } from "../contexts/UserContext";
 import type { Post } from "../types/post";
 import './Profile.css'
+import Loader from "../components/Loader";
 
 export default function Profile(
     props: {
         loadingProfile: boolean,
         profile: Profile | undefined,
-        loadingPosts: boolean,
+        isLoadingPosts: boolean,
         posts: Post[],
         onClickFollowBtn: () => void,
-        handleDeletePost: (postId: number) => void
+        handleDeletePost: (post: Post) => void
     }
 ): JSX.Element {
     const { logout } = useUser();
@@ -83,15 +84,10 @@ export default function Profile(
                     </div>
                     <h2 className='posts-top'>Posts</h2>
                     <div className='h-line'></div>
-                    {props.loadingPosts ? (
-                        <div className='loading'>
-                            <div className='loader'></div>
-                        </div>
-                    ) : (
-                        <div className='profile-posts-container'>
-                            {props.posts.map((post) => <FeedPost key={post.id} post={post} handleDeletePost={props.handleDeletePost} />)}
-                        </div>
-                    )}
+                    <div className='profile-posts-container'>
+                        {props.posts.map((post) => <FeedPost key={post.id} post={post} handleDeletePost={props.handleDeletePost} />)}
+                        {props.isLoadingPosts && (<Loader />)}
+                    </div>
                 </div>
             )}
         </>

@@ -145,9 +145,9 @@ export class ChatController {
     @ApiCookieAuth('token')
     @Get("/:id/messages")
     @UseGuards(JwtAuthGuard)
-    getChatMessages(@Param('id') id: string, @Query('cursor') cursor?: string) {
+    getChatMessages(@Param('id') id: string, @Query('cursor') cursor?: string, @Query('limit') limit?: number) {
         const id_ = parseInt(id);
         if (Number.isNaN(id_)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
-        return this.chatService.getChatMessages(id_, cursor); // cursor -- createdAt
+        return this.chatService.getChatMessages(id_, cursor, limit); // cursor -- createdAt
     }
 }

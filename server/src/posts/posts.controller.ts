@@ -53,7 +53,7 @@ export class PostsController {
         }
     })
     @Get("/user/:login")
-    async getUserPosts(@Param('login') login: string, @Query('cursor') cursor?: string) {
+    async getUserPosts(@Param('login') login: string, @Query('cursor') cursor?: string, @Query('limit') limit?: number) {
         const user = await this.userModel.findOne({ where: { login } });
         if (!user) {
             throw new HttpExceptionCode([{
@@ -63,7 +63,7 @@ export class PostsController {
         }
 
         const plainUser = user.get({ plain: true });
-        return await this.postsService.getUserPosts(plainUser.id, cursor);
+        return await this.postsService.getUserPosts(plainUser.id, cursor, limit);
     }
 
 
@@ -100,8 +100,8 @@ export class PostsController {
     @ApiCookieAuth('token')
     @UseGuards(JwtAuthGuard)
     @Get('/news/feed')
-    async getNewsFeed(@Req() req, @Query('cursor') cursor?: string) {
-        return await this.postsService.getNewsFeed(req.user.id, cursor);
+    async getNewsFeed(@Req() req, @Query('cursor') cursor?: string, @Query('limit') limit?: number) {
+        return await this.postsService.getNewsFeed(req.user.id, cursor, limit);
     }
 
 

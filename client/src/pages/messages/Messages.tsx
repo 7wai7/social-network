@@ -40,7 +40,8 @@ export default function Messages(): JSX.Element {
             if(!context.selectedChat?.id) return;
 
             const lastMessage = allMessages.at(-1);
-            return fetchMessages(context.selectedChat.id, lastMessage?.createdAt)
+            console.log("lastMessage", lastMessage);
+            return fetchMessages(context.selectedChat.id, lastMessage?.createdAt, 2)
         },
         enabled: !!context.selectedChat && hasMoreMessages,
     });

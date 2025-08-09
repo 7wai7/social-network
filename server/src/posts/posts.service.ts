@@ -38,7 +38,7 @@ export class PostsService {
             where.createdAt = { [Op.lt]: cursor };
         }
 
-        return await this.postsModel.findAll({
+        return await this.postsModel.scope(Post.withOwnership(user_id)).findAll({
             where,
             include: [
                 {
@@ -65,7 +65,7 @@ export class PostsService {
             where.createdAt = { [Op.lt]: cursor };
         }
 
-        return await this.postsModel.findAll({
+        return await this.postsModel.scope(Post.withOwnership(userId)).findAll({
             where,
             include: [
                 {
@@ -99,7 +99,7 @@ export class PostsService {
 
     async createPost(postDto: CreatePostDto) {
         console.log("postDto", postDto);
-        
+
         const transaction = await this.sequelize.transaction();
 
         try {
@@ -112,8 +112,7 @@ export class PostsService {
 
             await transaction.commit();
 
-            const fullPost = await this.postsModel.findByPk(post.id, {
-                attributes: ['id', 'text', 'createdAt'],
+            const fullPost = await this.postsModel.scope(Post.withOwnership(postDto.user_id)).findByPk(post.id, {
                 include: [
                     {
                         model: User,
@@ -128,6 +127,9 @@ export class PostsService {
                     }
                 ]
             })
+
+            console.log(fullPost?.get());
+            
 
             return fullPost?.get({ plain: true })
         } catch (error) {

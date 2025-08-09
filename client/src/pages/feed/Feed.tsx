@@ -1,39 +1,31 @@
-import { useEffect, useState, type JSX } from 'react';
+import { useEffect, type JSX } from 'react';
 import './Feed.css'
 import { fetchFeed } from '../../services/api';
-import type { Post } from '../../types/post';
 import FeedPost from '../../components/FeedPost';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import Loader from '../../components/Loader';
 
 export default function Feed(): JSX.Element {
-	const [posts, setPosts] = useState<Post[]>([]);
-    const [hasMorePosts, setHasMorePosts] = useState(true);
-
-	
-    const { data, isLoading, refetch } = useQuery({
-        queryKey: ['load-profile-posts'],
-        queryFn: () => {
-            const lasPost = posts.at(-1);
-            return fetchFeed(lasPost?.createdAt)
+    const {
+        data,
+        fetchNextPage,
+        isFetchingNextPage,
+    } = useInfiniteQuery({
+        queryKey: ['feed'],
+        queryFn: ({ pageParam = undefined }: { pageParam: string | undefined }) => {
+            return fetchFeed(pageParam, 5);
         },
-        enabled: hasMorePosts
-    })
-
-    useEffect(() => {
-        if (data) setPosts(prev => [...prev, ...data]);
-
-        if (Array.isArray(data) && data.length === 0) {
-            setHasMorePosts(false);
-        }
-    }, [data])
+        initialPageParam: undefined, // Initial value for pageParam
+        getNextPageParam: lastPage => lastPage.at(-1)?.createdAt,
+    });
 
     useEffect(() => {
         const handleScroll = () => {
             const scrollTop = document.documentElement.scrollTop;
             const scrollHeight = document.documentElement.scrollHeight;
             const height = window.innerHeight;
-            if (scrollTop + height > scrollHeight - 200) {
-                refetch();
+            if (scrollTop + height > scrollHeight - 1) {
+                fetchNextPage();
             }
         };
 
@@ -41,16 +33,15 @@ export default function Feed(): JSX.Element {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-	return (
-		<>
-			{isLoading ? (
-				<div className='loading'>
-					<div className='loader'></div>
-					<span>Loading...</span>
-				</div>
-			) : <div className="content-container">
-				{posts.map((post) => <FeedPost key={post.id} post={post} />)}
-			</div>}
-		</>
-	);
+    return (
+        <>
+            <div className="feed-posts-container">
+                {data?.pages.flat().map(post => (
+                    <FeedPost key={post.id} post={post} />
+                ))}
+
+                {isFetchingNextPage && (<Loader />)}
+            </div>
+        </>
+    );
 }

@@ -1,19 +1,21 @@
 import type { FC, JSX } from 'react';
 import './FeedPost.css';
 import type { Post } from '../types/post';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Dropdown from './Dropdown';
-import { useUser } from '../contexts/UserContext';
 import { IMAGE_EXTS, VIDEO_EXTS } from '../other/constants';
 import { fetchUnfollow } from '../services/api';
 import { downloadFile, formatBytes, timeAgo } from '../other/globals';
+import React from 'react';
 
 interface FeedPostProps {
 	post: Post,
-	handleDeletePost?: (postId: number) => void | Promise<void> | null
+	handleDeletePost?: (post: Post) => void | Promise<void> | null
 }
 
-function handlePostFiles(post: Post): JSX.Element {
+function renderPostFiles(post: Post): JSX.Element {
+	if(post.files.length === 0) return <></>;
+
 	const mediaExts = [...IMAGE_EXTS, ...VIDEO_EXTS];
 
 	const mediaFiles = post.files.filter(file => {
@@ -99,12 +101,47 @@ function handlePostFiles(post: Post): JSX.Element {
 }
 
 const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
-	const { user } = useUser();
 	const location = useLocation();
+	const navigate = useNavigate();
 	const isProfilePage = location.pathname.startsWith('/profile');
 
+	const onClickPost = (e: React.MouseEvent<HTMLElement>) => {
+		// Якщо клік по посиланню або кнопці — нічого не робимо (дозволяємо нормальну поведінку)
+		const anchor = (e.target as HTMLElement).closest('a, button');
+		if (anchor) return;
+
+		// додатково перевірити dropdown, input тощо:
+		if ((e.target as HTMLElement).closest('.dropdown-menu-container')) return;
+
+		navigate(`/${post.user.login}/${post.id}`);
+	}
+
+	const getDropdownItems = () => {
+		if (isProfilePage && post.isOwnPost) {
+			return [
+				{
+					text: "Delete post",
+					onClick: () => handleDeletePost?.(post),
+				},
+			];
+		}
+		return [
+			{
+				text: `Unfollow ${post.user.login}`,
+				onClick: () => {
+					fetchUnfollow(post.user.id).catch(console.error);
+				},
+			},
+			{
+				text: "Report Post",
+				onClick: () => console.log("Report Post"),
+			},
+		];
+	};
+
+
 	return (
-		<div className="post">
+		<div className="post" onClick={(e) => onClickPost(e)}>
 			{
 				!isProfilePage && (
 					<div className='avatar-side'>
@@ -143,42 +180,16 @@ const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 								</svg>
 							</div>
 						}
-						items={
-							isProfilePage && post.user.login === user?.login
-								? [
-									{
-										text: `Delete post`,
-										onClick: () => handleDeletePost ? handleDeletePost(post.id) : {}
-									}
-								]
-								: [
-									{
-										text: `Unfollow ${post.user.login}`,
-										onClick: () => {
-											console.log(`Unfollow ${post.user.login}`)
-
-											fetchUnfollow(post.user.id)
-												.catch(err => console.log(err))
-										}
-									},
-									{
-										text: 'Report Post',
-										onClick: () => {
-											console.log(`Report Post`)
-										}
-									}
-								]
-						}
+						items={getDropdownItems()}
 					/>
 				</div>
-
-				<Link to={`/${post.user.login}/${post.id}`}>
-					<span className='text'>{post.text}</span>
-				</Link>
-				{post.files.length ? handlePostFiles(post) : ''}
+				{post.text.trim() && (<span className='text'>{post.text}</span>)}
+				{renderPostFiles(post)}
 			</div>
 		</div>
 	);
 };
 
-export default FeedPost;
+export default React.memo(FeedPost, (prev, next) => {
+	return prev.post.id === next.post.id;
+});

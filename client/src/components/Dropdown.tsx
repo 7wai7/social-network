@@ -34,13 +34,19 @@ const Dropdown: FC<DropdownProps> = ({ button, items }) => {
             }}>
                 {button}
             </button>
-            <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`}>
-                {items.map((item, index) => (
-                    <button key={index} className="dropdown-item" onClick={() => item.onClick ? item.onClick() : {}}>
-                        <span>{item.text}</span>
-                    </button>
-                ))}
-            </div>
+            {open && (
+                <div className="dropdown-menu">
+                    {items.map((item, index) => (
+                        <button
+                            key={index}
+                            className="dropdown-item"
+                            onClick={item.onClick}
+                        >
+                            <span>{item.text}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

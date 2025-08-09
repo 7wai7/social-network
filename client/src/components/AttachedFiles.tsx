@@ -56,8 +56,6 @@ export default React.memo(function AttachedFiles(
 
 
     const renderAttachedFiles = (): JSX.Element => {
-        console.log("renderAttachedFiles");
-
         const mediaElements: JSX.Element[] = [];
         const filesElements: JSX.Element[] = [];
 

@@ -66,6 +66,7 @@ export default function MessagesUI(
     });
 
     const renderMessage = (m: Message): JSX.Element => {
+	console.log("render renderMessage", m.id);
         const isOwnMessage = m.user.id === user?.id;
 
         const buttons: JSX.Element =

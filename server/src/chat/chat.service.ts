@@ -75,7 +75,8 @@ export class ChatService {
 
     async getChatMessages(
         chatId: number,
-        cursor?: string
+        cursor?: string,
+        limit: number = 30
     ): Promise<Messages[]> {
         const where: any = {
             chat_id: chatId
@@ -103,7 +104,7 @@ export class ChatService {
             where,
             include,
             order: [['createdAt', 'DESC']],
-            limit: 30,
+            limit,
             attributes: ['id', 'text', 'chat_id', 'createdAt']
         });
 

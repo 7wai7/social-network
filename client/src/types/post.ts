@@ -7,4 +7,5 @@ export interface Post {
 	createdAt: string,
 	files: File[],
 	user: User,
+	isOwnPost: boolean
 }

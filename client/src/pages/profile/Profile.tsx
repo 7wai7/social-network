@@ -5,7 +5,7 @@ import { fetchDeletePost, fetchFollow, fetchProfile, fetchUserPosts } from '../.
 import ProfileUI from '../../ui/ProfileUI';
 import { useOutletContext, useParams } from 'react-router-dom';
 import type EventEmitter from '../../services/EventEmitter';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
 type ContextType = {
     layoutEmitter: EventEmitter
@@ -13,37 +13,49 @@ type ContextType = {
 
 export default function Profile(): JSX.Element {
     const context = useOutletContext<ContextType>();
+    const queryClient = useQueryClient();
 
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [profile, setProfile] = useState<Profile>();
-
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [hasMorePosts, setHasMorePosts] = useState(true);
-
     const { login } = useParams();
 
-    const { data, isLoading, refetch } = useQuery({
-        queryKey: ['load-profile-posts', login],
-        queryFn: () => {
-            if (!login) return;
-            const lasPost = posts.at(-1);
-            return fetchUserPosts(login, lasPost?.createdAt)
+    const {
+        data,
+        fetchNextPage,
+        isFetchingNextPage,
+    } = useInfiniteQuery({
+        queryKey: ['profile'],
+        queryFn: ({ pageParam = undefined }: { pageParam: string | undefined }) => {
+            if (!login) return [];
+            return fetchUserPosts(login, pageParam);
         },
-        enabled: !!login && hasMorePosts
-    })
+        initialPageParam: undefined,
+        getNextPageParam: lastPage => lastPage.at(-1)?.createdAt,
+        enabled: !!login
+    });
 
     useEffect(() => {
-        if (data) setPosts(prev => [...prev, ...data]);
+        const handleScroll = () => {
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight;
+            const height = window.innerHeight;
+            if (scrollTop + height > scrollHeight - 1) {
+                fetchNextPage();
+            }
+        };
 
-        if (Array.isArray(data) && data.length === 0) {
-            setHasMorePosts(false);
-        }
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        console.log(data);
+        
     }, [data])
 
     useEffect(() => {
         if (!login) return;
         setLoadingProfile(true);
-        setPosts([]);
 
         fetchProfile(login)
             .then(data => {
@@ -54,8 +66,18 @@ export default function Profile(): JSX.Element {
     }, [login]);
 
     useEffect(() => {
-        const onAddProfilePost = (post: Post) => {
-            if (profile?.isOwnProfile) setPosts(prev => [post, ...prev]);
+        const onAddProfilePost = (newPost: Post) => {
+            queryClient.setQueryData(['profile'], (oldData: any) => {
+                if (!oldData) return oldData;
+
+                return {
+                    ...oldData,
+                    pages: [
+                        [newPost, ...oldData.pages[0]], // вставили на початок першої сторінки
+                        ...oldData.pages.slice(1)
+                    ]
+                };
+            });
         }
 
         context.layoutEmitter.on("add-profile-post", onAddProfilePost);
@@ -65,28 +87,23 @@ export default function Profile(): JSX.Element {
         };
     }, [profile])
 
-    useEffect(() => {
-        const handleScroll = () => {
-            const scrollTop = document.documentElement.scrollTop;
-            const scrollHeight = document.documentElement.scrollHeight;
-            const height = window.innerHeight;
-            if (scrollTop + height > scrollHeight - 200) {
-                refetch();
-            }
-        };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-
-    const handleDeletePost = async (postId: number) => {
-        if (!profile?.isOwnProfile) return;
+    const handleDeletePost = async (post: Post) => {
+        if (!post.isOwnPost) return;
 
         try {
-            fetchDeletePost(postId)
+            fetchDeletePost(post.id)
                 .then(() => {
-                    setPosts(prev => prev.filter(p => p.id !== postId));
+                    queryClient.setQueryData(['profile'], (oldData: any) => {
+                        if (!oldData) return oldData;
+
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page: Post[]) =>
+                                page.filter(p => p.id !== post.id)
+                            )
+                        };
+                    });
                 })
                 .catch(err => console.log(err))
         } catch (err) {
@@ -114,8 +131,8 @@ export default function Profile(): JSX.Element {
     return <ProfileUI
         loadingProfile={loadingProfile}
         profile={profile}
-        loadingPosts={isLoading}
-        posts={posts}
+        isLoadingPosts={isFetchingNextPage}
+        posts={data?.pages.flat() || []}
         onClickFollowBtn={onClickFollowBtn}
         handleDeletePost={handleDeletePost}
     />
