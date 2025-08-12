@@ -1,18 +1,128 @@
 import type { JSX } from "react";
 import React, { useMemo, useRef } from "react";
 import type { Message } from "../types/message";
-import { useUser } from "../contexts/UserContext";
 import type { Chat } from "../types/chat";
 import './Messages.css'
 import type EventEmitter from "../services/EventEmitter";
 import AttachedFilesPreview from "../components/AttachedFilesPreview";
 import AttachedFiles from "../components/AttachedFiles";
 import type { File } from "../types/file";
+import type { AttachedFile } from "../types/attachedFile";
+
+
+
+
+const MessageDayBlock = React.memo((
+    {
+        date,
+        messages,
+        layoutEmitter,
+        deleteMessage,
+        editMessage,
+    }: {
+        date: string,
+        messages: Message[],
+        layoutEmitter: EventEmitter,
+        deleteMessage: (id: number) => void,
+        editMessage: (m: Message) => void
+    }
+) => {
+    return (
+        <div className="message-day-block">
+            <div className="day-label">{new Date(date).toLocaleDateString()}</div>
+            {messages.slice().reverse().map(m => (
+                <RenderMessage
+                    key={m.id}
+                    m={m}
+                    layoutEmitter={layoutEmitter}
+                    deleteMessage={deleteMessage}
+                    editMessage={editMessage}
+                />
+            ))}
+        </div>
+    );
+});
+
+const RenderMessage = React.memo((
+    {
+        m,
+        layoutEmitter,
+        deleteMessage,
+        editMessage,
+    }: {
+        m: Message,
+        layoutEmitter: EventEmitter,
+        deleteMessage: (id: number) => void,
+        editMessage: (m: Message) => void
+    }
+): JSX.Element => {
+    console.log("render renderMessage", m);
+
+    const buttons: JSX.Element =
+        <>
+            {
+                m.isOwnMessage && (
+                    <button onClick={() => editMessage(m)}>
+                        <span>Edit</span>
+                    </button>
+                )
+            }
+            {m.text.trim() && (
+                <button>
+                    <span>Copy text</span>
+                </button>
+            )}
+            {
+                m.isOwnMessage && (
+                    <button onClick={() => deleteMessage(m.id)}>
+                        <span>Delete</span>
+                    </button>
+                )
+            }
+        </>
+
+    return (
+        <div className={`message ${m.isOwnMessage ? 'own-message' : ''}`} onContextMenu={(e) => layoutEmitter.emit('handle-context-menu', e, buttons)}>
+            {!m.isOwnMessage ? <h5 className="sender">{m.user.login}</h5> : ''}
+            {m.text.trim() && (
+                <div className="message-content">{m.text}</div>
+            )}
+            <AttachedFiles attachedFiles={m.files} />
+            <div className="time-ago">{new Date(m.createdAt).toLocaleTimeString(
+                'uk-UA',
+                {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }
+            )}</div>
+        </div>
+    )
+})
+
 
 export default function MessagesUI(
-    props: {
+    {
+        layoutEmitter,
+        attachedFilesPreview,
+        setAttachedFilesPreview,
+        messagesWrapperRef,
+        textareaRef,
+        selectedChat,
+        textareaText,
+        allMessages,
+        editedMessage,
+        editedMessageSelectedFilesToDelete,
+        setEditedMessageSelectedFilesToDelete,
+        setTextareaText,
+        cancelEditingMessage,
+        onScroll,
+        sendMessage,
+        deleteMessage,
+        editMessage,
+    }: {
         layoutEmitter: EventEmitter,
-        messagesEmitter: EventEmitter,
+        attachedFilesPreview: AttachedFile[],
+        setAttachedFilesPreview: React.Dispatch<React.SetStateAction<AttachedFile[]>>,
         messagesWrapperRef: React.RefObject<HTMLDivElement | null>,
         textareaRef: React.RefObject<HTMLTextAreaElement | null>,
         selectedChat: Chat | null,
@@ -29,7 +139,6 @@ export default function MessagesUI(
         editMessage: (m: Message) => void
     }
 ): JSX.Element {
-    const { user } = useUser();
     const attachFilesInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -50,65 +159,18 @@ export default function MessagesUI(
         return (
             <>
                 {keys.map((date) => (
-                    <MessageDayBlock key={date} date={date} messages={groupDays[date]} />
+                    <MessageDayBlock
+                        key={date}
+                        date={date}
+                        messages={groupDays[date]}
+                        layoutEmitter={layoutEmitter}
+                        deleteMessage={deleteMessage}
+                        editMessage={editMessage}
+                    />
                 ))}
             </>
         );
     };
-
-    const MessageDayBlock = React.memo(({ date, messages }: { date: string, messages: Message[] }) => {
-        return (
-            <div className="message-day-block">
-                <div className="day-label">{new Date(date).toLocaleDateString()}</div>
-                {messages.slice().reverse().map(m => renderMessage(m))}
-            </div>
-        );
-    });
-
-    const renderMessage = (m: Message): JSX.Element => {
-	console.log("render renderMessage", m.id);
-        const isOwnMessage = m.user.id === user?.id;
-
-        const buttons: JSX.Element =
-            <>
-                {
-                    isOwnMessage && (
-                        <button onClick={() => props.editMessage(m)}>
-                            <span>Edit</span>
-                        </button>
-                    )
-                }
-                {m.text.trim() && (
-                    <button>
-                        <span>Copy text</span>
-                    </button>
-                )}
-                {
-                    isOwnMessage && (
-                        <button onClick={() => props.deleteMessage(m.id)}>
-                            <span>Delete</span>
-                        </button>
-                    )
-                }
-            </>
-
-        return (
-            <div className={`message ${isOwnMessage ? 'own-message' : ''}`} key={m.id} onContextMenu={(e) => props.layoutEmitter.emit('handle-context-menu', e, buttons)}>
-                {!isOwnMessage ? <h5 className="sender">{m.user.login}</h5> : ''}
-                {m.text.trim() && (
-                    <div className="message-content">{m.text}</div>
-                )}
-                <AttachedFiles attachedFiles={m.files} />
-                <div className="time-ago">{new Date(m.createdAt).toLocaleTimeString(
-                    'uk-UA',
-                    {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }
-                )}</div>
-            </div>
-        )
-    }
 
     const renderEditedMessageText = (m: Message): JSX.Element => {
         const onChangeCheckbox = (
@@ -116,7 +178,7 @@ export default function MessagesUI(
             file: File
         ) => {
             const checked = e.target.checked;
-            props.setEditedMessageSelectedFilesToDelete(prev =>
+            setEditedMessageSelectedFilesToDelete(prev =>
                 checked
                     ? [...prev, file]
                     : prev.filter(f => f.id !== file.id)
@@ -140,7 +202,7 @@ export default function MessagesUI(
                             files:
                         </span>
                         {m.files.map(file => {
-                            const isChecked = props.editedMessageSelectedFilesToDelete.includes(file);
+                            const isChecked = editedMessageSelectedFilesToDelete.includes(file);
                             return (
                                 <div key={file.id} className={`${isChecked ? "is-checked-to-delete" : ""}`}>
                                     <input
@@ -170,41 +232,45 @@ export default function MessagesUI(
 
 
     const renderedMessages = useMemo(() => {
-        return renderMessagesByDate(props.allMessages);
-    }, [props.allMessages]);
+        return renderMessagesByDate(allMessages);
+    }, [allMessages]);
 
 
     return (
         <>
             <div className='chat-window'>
                 {
-                    props.selectedChat
+                    selectedChat
                         ? <>
-                            <h2 className='chat-title'>{props.selectedChat.title || props.selectedChat.other_user_login}</h2>
-                            <div className="messages-wrapper" ref={props.messagesWrapperRef} onScroll={props.onScroll}>
+                            <h2 className='chat-title'>{selectedChat.title || selectedChat.other_user_login}</h2>
+                            <div className="messages-wrapper" ref={messagesWrapperRef} onScroll={onScroll}>
                                 <div className="messages-container">
                                     {renderedMessages}
                                 </div>
                             </div>
                             <input type="file" multiple className='attach-file-input' hidden ref={attachFilesInputRef} />
-                            {props.editedMessage && (
+                            {editedMessage && (
                                 <div className="editing-message-block">
                                     <div className="editing-message-icon">
 
                                     </div>
                                     <div className="edit-message-data">
                                         <span className="edit-message-title">Edit message:</span>
-                                        <span className="edit-message-text">{renderEditedMessageText(props.editedMessage)}</span>
+                                        <span className="edit-message-text">{renderEditedMessageText(editedMessage)}</span>
                                     </div>
-                                    <button className="cancel-editing-message" onClick={() => props.cancelEditingMessage()}>
+                                    <button className="cancel-editing-message" onClick={() => cancelEditingMessage()}>
                                         <svg viewBox="0 0 24 24" aria-hidden="true" fill="#fff"><path d="M10.59 12L4.54 5.96l1.42-1.42L12 10.59l6.04-6.05 1.42 1.42L13.41 12l6.05 6.04-1.42 1.42L12 13.41l-6.04 6.05-1.42-1.42L10.59 12z"></path></svg>
                                     </button>
                                 </div>
                             )}
-                            <AttachedFilesPreview emitter={props.messagesEmitter} attachFileInputRef={attachFilesInputRef} />
+                            <AttachedFilesPreview
+                                attachedFilesPreview={attachedFilesPreview}
+                                setAttachedFilesPreview={setAttachedFilesPreview}
+                                attachFileInputRef={attachFilesInputRef}
+                            />
                             <div className="message-textarea-wrapper">
                                 {
-                                    props.editedMessage
+                                    editedMessage
                                         ? <button className='change-file-btn' onClick={() => onClickAttachFile()}>
                                             <svg
                                                 fill="#fff"
@@ -237,10 +303,10 @@ export default function MessagesUI(
                                             </svg>
                                         </button>
                                 }
-                                <div className='scroll-block'>
-                                    <textarea name="message" className="message-textarea textarea-autosize" placeholder="Повідомлення" ref={props.textareaRef} value={props.textareaText} onChange={(e) => props.setTextareaText(e.target.value)}></textarea>
+                                <div className='textarea-scroll-block'>
+                                    <textarea name="message" className="message-textarea textarea-autosize" placeholder="Повідомлення" ref={textareaRef} value={textareaText} onChange={(e) => setTextareaText(e.target.value)}></textarea>
                                 </div>
-                                <button className="send-messages-btn" onClick={() => props.sendMessage()}>
+                                <button className="send-messages-btn" onClick={() => sendMessage()}>
                                     <svg fill="#fff" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M16,464,496,256,16,48V208l320,48L16,304Z" />
                                     </svg>

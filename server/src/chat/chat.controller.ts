@@ -2,6 +2,7 @@ import { Controller, Get, HttpException, HttpStatus, Param, Query, Req, UseGuard
 import { ChatService } from "./chat.service";
 import { JwtAuthGuard } from "src/auth/jwt-auth.quard";
 import { ApiCookieAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse } from "@nestjs/swagger";
+import { ReqUser } from "src/decorators/ReqUser";
 
 
 @Controller("/chats")
@@ -145,9 +146,14 @@ export class ChatController {
     @ApiCookieAuth('token')
     @Get("/:id/messages")
     @UseGuards(JwtAuthGuard)
-    getChatMessages(@Param('id') id: string, @Query('cursor') cursor?: string, @Query('limit') limit?: number) {
+    getChatMessages(
+        @ReqUser() user,
+        @Param('id') id: string,
+        @Query('cursor') cursor?: string,
+        @Query('limit') limit?: number
+    ) {
         const id_ = parseInt(id);
         if (Number.isNaN(id_)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
-        return this.chatService.getChatMessages(id_, cursor, limit); // cursor -- createdAt
+        return this.chatService.getChatMessages(user.id, id_, cursor, limit); // cursor -- createdAt
     }
 }

@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { FileDto } from "./create-file.dto";
-import { IsArray, IsNumber, IsOptional, ValidateNested } from "class-validator";
+import { IsArray, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
 import { UserDto } from "./login-user.dto";
 
@@ -23,6 +23,7 @@ export class CreateMessageDto {
 
     @ApiProperty({ example: 'Повідомлення', description: 'Текст повідомлення' })
     @IsOptional()
+    @IsString()
     readonly text?: string;
 
     @ApiProperty({ type: [FileDto], description: 'Файли повідомлення' })

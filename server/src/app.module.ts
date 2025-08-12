@@ -12,7 +12,7 @@ import { Follow } from './models/follow.model';
 import { CommentsModule } from './comments/comments.module';
 import * as dotenv from 'dotenv';
 import { Comment } from './models/comments.model';
-import { CommentFile } from './models/commentFiles.model';
+import { CommentFiles } from './models/commentFiles.model';
 import { ChatModule } from './chat/chat.module';
 import { ChatParticipants } from './models/chatParticipants.model';
 import { Chat } from './models/chat.model';
@@ -46,7 +46,7 @@ dotenv.config();
 			username: process.env.POSTGRES_USER,
 			password: process.env.POSTGRES_PASSWORD,
 			database: process.env.POSTGRES_DB,
-			models: [Follow, User, Post, PostFiles, Comment, CommentFile, Chat, ChatParticipants, Messages, MessageFiles, Files],
+			models: [Follow, User, Post, PostFiles, Comment, CommentFiles, Chat, ChatParticipants, Messages, MessageFiles, Files],
 			autoLoadModels: true,
 			synchronize: true,
 			logging: false

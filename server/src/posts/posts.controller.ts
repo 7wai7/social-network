@@ -9,6 +9,7 @@ import { ApiBody, ApiCookieAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, 
 import { CreatePostDto, PostDto } from 'src/dto/create-post.dto';
 import { PostsCreationAttrs } from 'src/models/posts.model';
 import { CreateFileDto } from 'src/dto/create-file.dto';
+import { ReqUser } from 'src/decorators/ReqUser';
 
 @Controller('/posts')
 export class PostsController {
@@ -16,6 +17,34 @@ export class PostsController {
         @InjectModel(User) private userModel: typeof User,
         private readonly postsService: PostsService,
     ) { }
+
+    @ApiOperation({
+        summary: 'Отримати пост по id'
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'id поста',
+        example: 1,
+        type: 'string'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Пост знайдено',
+        type: PostDto
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Пост не знайдено',
+    })
+    @Get("/:id")
+    @UseGuards(JwtAuthGuard)
+    async getPost(@ReqUser() user, @Param('id') id: string) {
+        const id_ = parseInt(id);
+        if (Number.isNaN(id_)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
+        return await this.postsService.getPost(user.id, id_);
+    }
+
+
 
     @ApiOperation({
         summary: 'Отримати пости користувача за логіном',
@@ -190,8 +219,6 @@ export class PostsController {
     @UseGuards(JwtAuthGuard)
     deletePost(@Req() req, @Param('id') id: string) {
         const id_ = parseInt(id);
-        console.log("delete post", id_);
-
         if (Number.isNaN(id_)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
         return this.postsService.deletePostByOwner(id_, req.user.id);
     }

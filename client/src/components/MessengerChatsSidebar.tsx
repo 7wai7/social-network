@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import "./RightSidebar.css"
 import React, { useState } from "react";
-import { fetchFindUsersByLogin, fetchUserChats } from "../services/api";
+import { fetchFindChatUsersByLogin, fetchUserChats } from "../services/api";
 import type { Chat } from "../types/chat";
 import { getSocket } from "../services/socket";
 import type { ChatUser } from "../types/chatUser";
@@ -42,7 +42,7 @@ const MessengerChatsSidebar = (
             return;
         }
 
-        fetchFindUsersByLogin(value)
+        fetchFindChatUsersByLogin(value)
             .then(data => {
                 setSearchResults(data);
             })
@@ -59,7 +59,7 @@ const MessengerChatsSidebar = (
 
         return (
             <button
-                className="chat-item user"
+                className="search-item user"
                 key={`user-${user.user_id}`}
                 onClick={() => onChatClick({
                     id: user.chat_id,
@@ -72,7 +72,7 @@ const MessengerChatsSidebar = (
                 <img
                     src={`http://localhost:3000/avatars/${user.login}`}
                     alt={`${user.login}`}
-                    className='chat-item avatar'
+                    className='search-item avatar'
                     onError={(e) => {
                         e.currentTarget.onerror = null; // запобігає нескінченному циклу, якщо fallback теж не знайдеться
                         e.currentTarget.src = "/default_profile.png"; // шлях до картинки "Фото не знайдено"
@@ -104,7 +104,7 @@ const MessengerChatsSidebar = (
 
         return (
             <button
-                className="chat-item chat"
+                className="search-item chat"
                 key={`chat-${chat.id}`}
                 onClick={() => onChatClick(chat)}
                 onContextMenu={(e) => props.layoutEmitter.emit('handle-context-menu', e, buttons)}
@@ -127,8 +127,8 @@ const MessengerChatsSidebar = (
                         <span>Loading...</span>
                     </div>
                 ) : (
-                    <div className="scroll-area">
-                        <div className="chat-list">
+                    <div className="search-scroll-area">
+                        <div className="search-list">
                             {
                                 search.trim()
                                     ? searchResults.length === 0

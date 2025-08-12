@@ -7,5 +7,6 @@ export interface Message {
     createdAt: string,
     user: User,
     chat_id: number,
-    files: File[]
+    files: File[],
+    isOwnMessage: boolean
 }

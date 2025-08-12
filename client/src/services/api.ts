@@ -7,6 +7,7 @@ import type { User } from '../types/user';
 import type { Message } from '../types/message';
 import type { ChatUser } from '../types/chatUser';
 import type { File } from '../types/file';
+import type { Comment } from '../types/comment';
 
 
 
@@ -84,14 +85,31 @@ export async function fetchProfile(login: string): Promise<Profile> {
 	return await fetch(api.get(`/api/users/profile/${login}`));
 }
 
-export async function fetchUserPosts(login: string, cursor?: string, limit: number = 20): Promise<Post[]> {
-	return await fetch(api.get(`/api/posts/user/${login}`, {
-		params: {
-			cursor,
-			limit
-		}
-	}));
+export async function fetchFollow(id: number): Promise<{
+	following: boolean,
+	userId: number
+}> {
+	return await fetch(api.post(`/api/users/follow/${id}`));
 }
+
+export async function fetchUnfollow(id: number): Promise<boolean> {
+	return await fetch(api.delete(`/api/users/follow/${id}`));
+}
+
+
+
+export async function fetchSearch(login: string, limit: number = 20): Promise<User[]> {
+	return await fetch(
+		api.get(`/api/users/find/${login}`, {
+			params: {
+				limit
+			}
+		})
+	);
+}
+
+
+
 
 export async function fetchFeed(cursor?: string, limit: number = 20): Promise<Post[]> {
 	return await fetch(api.get('/api/posts/news/feed', {
@@ -102,8 +120,8 @@ export async function fetchFeed(cursor?: string, limit: number = 20): Promise<Po
 	}));
 }
 
-export async function fetchPost(formData: FormData): Promise<boolean> {
-	return await fetch(api.post('/api/posts', formData));
+export async function fetchGetPost(id: number): Promise<Post> {
+	return await fetch(api.get(`/api/posts/${id}`));
 }
 
 export async function fetchCreatePost(post: { text: string, files?: File[] }): Promise<number> {
@@ -119,6 +137,15 @@ export async function fetchCreatePost(post: { text: string, files?: File[] }): P
 	);
 }
 
+export async function fetchUserPosts(login: string, cursor?: string, limit: number = 20): Promise<Post[]> {
+	return await fetch(api.get(`/api/posts/user/${login}`, {
+		params: {
+			cursor,
+			limit
+		}
+	}));
+}
+
 export async function fetchDeletePost(id: number): Promise<boolean> {
 	return await fetch(api.delete(`/api/posts/${id}`));
 }
@@ -129,22 +156,11 @@ export async function fetchFiles(formData: FormData): Promise<File[]> {
 
 
 
-export async function fetchFollow(id: number): Promise<{
-	following: boolean,
-	userId: number
-}> {
-	return await fetch(api.post(`/api/users/follow/${id}`));
-}
-
-export async function fetchUnfollow(id: number): Promise<boolean> {
-	return await fetch(api.delete(`/api/users/follow/${id}`));
-}
-
 export async function fetchUserChats(): Promise<Chat[]> {
 	return await fetch(api.get(`/api/chats`));
 }
 
-export async function fetchFindUsersByLogin(login: string): Promise<ChatUser[]> {
+export async function fetchFindChatUsersByLogin(login: string): Promise<ChatUser[]> {
 	return await fetch(
 		api.get(`/api/chats/find`, {
 			params: {
@@ -164,5 +180,30 @@ export async function fetchMessages(chatId: number, cursor?: string, limit: numb
 				limit
 			}
 		})
+	)
+}
+
+
+export async function fetchComments(postId: number, cursor?: string, limit: number = 30): Promise<Comment[]> {
+	return await fetch(
+		api.get(`/api/comments/post/${postId}`, {
+			params: {
+				cursor,
+				limit
+			}
+		})
+	)
+}
+
+export async function fetchCreateComment(comment: { post_id: number, text: string, files?: File[] }): Promise<Comment[]> {
+	return await fetch(
+		api.post(`/api/comments`,
+			comment,
+			{
+				headers: {
+					"Content-Type": "application/json",
+				}
+			}
+		)
 	)
 }

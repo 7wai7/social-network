@@ -108,24 +108,26 @@ export default function Layout(): JSX.Element {
     return (
         <>
             <PostModal layoutEmitter={layoutEmitterRef.current} />
-            <LeftNavBar />
-            <main>
-                <Outlet
-                    context={{
-                        layoutEmitter: layoutEmitterRef.current,
-                        selectedChat,
-                        setSelectedChat,
-                        lastChatMessage,
-                    }}
+            <div className='info'>
+                <LeftNavBar />
+                <main>
+                    <Outlet
+                        context={{
+                            layoutEmitter: layoutEmitterRef.current,
+                            selectedChat,
+                            setSelectedChat,
+                            lastChatMessage,
+                        }}
+                    />
+                </main>
+                <RightSidebar
+                    layoutEmitter={layoutEmitterRef.current}
+                    setSelectedChat={setSelectedChat}
                 />
-            </main>
+            </div>
             <Footer
                 layoutEmitter={layoutEmitterRef.current}
                 lastChatMessage={lastChatMessage}
-                setSelectedChat={setSelectedChat}
-            />
-            <RightSidebar
-                layoutEmitter={layoutEmitterRef.current}
                 setSelectedChat={setSelectedChat}
             />
 

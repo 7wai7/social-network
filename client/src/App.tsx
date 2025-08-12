@@ -8,6 +8,17 @@ import Messages from './pages/messages/Messages.tsx';
 import Notifications from './pages/notifications/Notifications.tsx';
 import PrivateRoute from './components/PrivateRoute.tsx';
 import AuthPage from './pages/auth/AuthPage.tsx';
+import SinglePostPage from './pages/SinglePostPage.tsx';
+import whyDidYouRender from '@welldone-software/why-did-you-render';
+import React from 'react';
+
+whyDidYouRender(React, {
+  collapseGroups: true,
+  include: [/.*/],
+  logOnDifferentValues: false,
+  trackHooks: false,
+  trackAllPureComponents: true
+});
 
 export default function App(): JSX.Element {
 	useEffect(() => {
@@ -42,6 +53,7 @@ export default function App(): JSX.Element {
 					<Route path="/notifications" element={<Notifications />} />
 					<Route path="/messages" element={<Messages />} />
 					<Route path="/profile/:login" element={<Profile />} />
+					<Route path="/:login/:id" element={<SinglePostPage />} />
 				</Route>
 
 			</Routes>

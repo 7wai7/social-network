@@ -10,9 +10,8 @@ const PostModal = (
         layoutEmitter: EventEmitter
     }
 ) => {
-    const postModalEmitterRef = useRef(new EventEmitter());
     const postModalRef = useRef<HTMLDivElement>(null);
-    const attachedFilesRef = useRef<AttachedFile[]>([]);
+    const [attachedFilesPreview, setAttachedFilesPreview] = useState<AttachedFile[]>([]);
 
     const [text, setText] = useState('');
 
@@ -23,26 +22,20 @@ const PostModal = (
         const onCloseModal = () => {
             postModalRef.current?.setAttribute('hidden', '');
             setText('');
-            postModalEmitterRef.current.emit('set-attached-files', []);
-        }
-
-        const onGetAttachedFiles = (files: AttachedFile[]) => {
-            attachedFilesRef.current = files;
+            setAttachedFilesPreview([]);
         }
 
         props.layoutEmitter.on('open-post-modal', onOpenModal)
         props.layoutEmitter.on('close-post-modal', onCloseModal)
-        postModalEmitterRef.current.on('get-attached-files', onGetAttachedFiles);
 
         return () => {
             props.layoutEmitter.off('open-post-modal', onOpenModal)
             props.layoutEmitter.off('close-post-modal', onCloseModal)
-            postModalEmitterRef.current.off('get-attached-files', onGetAttachedFiles);
         }
     }, [])
 
     const publishPost = () => {
-        if (!text.trim() && attachedFilesRef.current.length == 0) return;
+        if (!text.trim() && attachedFilesPreview.length == 0) return;
 
         const publish = (files?: File[]) => {
             fetchCreatePost({ text, files })
@@ -53,9 +46,9 @@ const PostModal = (
                 .catch((error) => console.error('Помилка при створенні поста:', error));
         }
 
-        if (attachedFilesRef.current.length > 0) {
+        if (attachedFilesPreview.length > 0) {
             const formData = new FormData();
-            attachedFilesRef.current.forEach(({ file, url }) => {
+            attachedFilesPreview.forEach(({ file, url }) => {
                 formData.append('files', file);
                 URL.revokeObjectURL(url)
             });
@@ -74,7 +67,8 @@ const PostModal = (
         text={text}
         setText={setText}
         postModalRef={postModalRef}
-        postModalEmitter={postModalEmitterRef.current}
+        attachedFilesPreview={attachedFilesPreview}
+        setAttachedFilesPreview={setAttachedFilesPreview}
         publishPost={publishPost}
     />
 };

@@ -3,13 +3,14 @@
     display: flex;
     justify-content: end;
     overflow-y: auto;
-	height: 100%;
+    width: var(--left-nav-bar-width);
+	height: calc(100% - var(--footer-height));
     padding: 10px 0;
     box-sizing: border-box;
 }
 
 .left-nav-bar .content {
-    width: 220px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 16px;

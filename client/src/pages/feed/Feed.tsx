@@ -4,6 +4,7 @@ import { fetchFeed } from '../../services/api';
 import FeedPost from '../../components/FeedPost';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import Loader from '../../components/Loader';
+import { useInView } from 'react-intersection-observer';
 
 export default function Feed(): JSX.Element {
     const {
@@ -19,19 +20,10 @@ export default function Feed(): JSX.Element {
         getNextPageParam: lastPage => lastPage.at(-1)?.createdAt,
     });
 
+    const { ref: viewRef, inView } = useInView();
     useEffect(() => {
-        const handleScroll = () => {
-            const scrollTop = document.documentElement.scrollTop;
-            const scrollHeight = document.documentElement.scrollHeight;
-            const height = window.innerHeight;
-            if (scrollTop + height > scrollHeight - 1) {
-                fetchNextPage();
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+        if (inView) fetchNextPage();
+    }, [inView, fetchNextPage]);
 
     return (
         <>
@@ -41,6 +33,7 @@ export default function Feed(): JSX.Element {
                 ))}
 
                 {isFetchingNextPage && (<Loader />)}
+                <div ref={viewRef}></div>
             </div>
         </>
     );

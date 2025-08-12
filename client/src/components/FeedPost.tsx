@@ -7,23 +7,25 @@ import { IMAGE_EXTS, VIDEO_EXTS } from '../other/constants';
 import { fetchUnfollow } from '../services/api';
 import { downloadFile, formatBytes, timeAgo } from '../other/globals';
 import React from 'react';
+import type { File } from '../types/file';
+import Avatar from './Avatar';
 
 interface FeedPostProps {
 	post: Post,
-	handleDeletePost?: (post: Post) => void | Promise<void> | null
+	handleDeletePost?: (post: Post) => void
 }
 
-function renderPostFiles(post: Post): JSX.Element {
-	if(post.files.length === 0) return <></>;
+export function renderPostFiles(files: File[]): JSX.Element {
+	if (files.length === 0) return <></>;
 
 	const mediaExts = [...IMAGE_EXTS, ...VIDEO_EXTS];
 
-	const mediaFiles = post.files.filter(file => {
+	const mediaFiles = files.filter(file => {
 		const ext = file.originalname.split('.').pop()?.toLowerCase();
 		return ext && mediaExts.includes(ext);
 	});
 
-	const otherFiles = post.files.filter(file => {
+	const otherFiles = files.filter(file => {
 		const ext = file.originalname.split('.').pop()?.toLowerCase();
 		return !ext || !mediaExts.includes(ext);
 	});
@@ -32,7 +34,7 @@ function renderPostFiles(post: Post): JSX.Element {
 	return (
 		<>
 			{mediaFiles.length > 0 && (
-				<div className="media-block">
+				<div className="post-media-block">
 					{mediaFiles.map((file, index) => {
 						const ext = file.originalname.split('.').pop()?.toLowerCase();
 						if (!ext) return null;
@@ -68,7 +70,7 @@ function renderPostFiles(post: Post): JSX.Element {
 			)}
 
 			{otherFiles.length > 0 && (
-				<div className="other-files">
+				<div className="post-other-files">
 					{otherFiles.map((file, index) => {
 						// Файл іншого типу
 						return (
@@ -100,6 +102,31 @@ function renderPostFiles(post: Post): JSX.Element {
 	)
 }
 
+const getPostDropdownItems = (post: Post, handleDeletePost?: (post: Post) => void) => {
+	const isProfilePage = location.pathname.startsWith('/profile');
+
+	if (isProfilePage && post.isOwnPost) {
+		return [
+			{
+				text: "Delete post",
+				onClick: () => handleDeletePost?.(post),
+			},
+		];
+	}
+	return [
+		{
+			text: `Unfollow ${post.user.login}`,
+			onClick: () => {
+				fetchUnfollow(post.user.id).catch(console.error);
+			},
+		},
+		{
+			text: "Report Post",
+			onClick: () => console.log("Report Post"),
+		},
+	];
+};
+
 const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 	const location = useLocation();
 	const navigate = useNavigate();
@@ -115,29 +142,8 @@ const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 
 		navigate(`/${post.user.login}/${post.id}`);
 	}
-
-	const getDropdownItems = () => {
-		if (isProfilePage && post.isOwnPost) {
-			return [
-				{
-					text: "Delete post",
-					onClick: () => handleDeletePost?.(post),
-				},
-			];
-		}
-		return [
-			{
-				text: `Unfollow ${post.user.login}`,
-				onClick: () => {
-					fetchUnfollow(post.user.id).catch(console.error);
-				},
-			},
-			{
-				text: "Report Post",
-				onClick: () => console.log("Report Post"),
-			},
-		];
-	};
+	console.log("render post", post);
+	
 
 
 	return (
@@ -145,17 +151,7 @@ const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 			{
 				!isProfilePage && (
 					<div className='avatar-side'>
-						<Link to={`/profile/${post.user.login}`}>
-							<img
-								src={`${post.user.avatarUrl}`}
-								alt={`${post.user.login}`}
-								className='avatar'
-								onError={(e) => {
-									e.currentTarget.onerror = null; // запобігає нескінченному циклу, якщо fallback теж не знайдеться
-									e.currentTarget.src = "/default_profile.png"; // шлях до картинки "Фото не знайдено"
-								}}
-							/>
-						</Link>
+						<Avatar user={post.user} />
 					</div>
 				)
 			}
@@ -180,11 +176,11 @@ const FeedPost: FC<FeedPostProps> = ({ post, handleDeletePost }) => {
 								</svg>
 							</div>
 						}
-						items={getDropdownItems()}
+						items={getPostDropdownItems(post, handleDeletePost)}
 					/>
 				</div>
-				{post.text.trim() && (<span className='text'>{post.text}</span>)}
-				{renderPostFiles(post)}
+				{post.text?.trim() && (<div className='post-text'>{post.text}</div>)}
+				{renderPostFiles(post.files)}
 			</div>
 		</div>
 	);

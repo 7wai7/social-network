@@ -6,6 +6,7 @@
     display: flex;
     flex-direction: row;
     box-sizing: border-box;
+    cursor: pointer;
 }
 
 .post .avatar-side {
@@ -21,9 +22,6 @@
 
 .post .content {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
 }
 
 .post .content .post-top {
@@ -60,70 +58,76 @@
     fill: white;
 }
 
-.post .text {
+
+
+
+
+.post-text {
     color: white;
-    margin-top: 20px;
     word-wrap: break-word;
     font-size: 16px;
+    margin-top: 10px;
 }
 
-.post .media-block {
+.post-media-block {
 	display: flex;
     align-items: center;
     justify-content: center;
 	flex-wrap: wrap;
 	gap: 6px;
+    margin-top: 20px;
 }
 
-.post .other-files {
+.post-other-files {
     display: flex;
     flex-direction: column;
     align-items: start;
     gap: 6px;
+    margin-top: 20px;
 }
 
-.post .other-files .file {
+.post-other-files .file {
     display: flex;
     flex-direction: row;
     align-items: center;
     width: 100%;
     border-radius: 4px;
-    padding: 2px 4px;
+    padding: 2px 0;
     box-sizing: border-box;
 }
 
-.post .other-files .file-icon {
+.post-other-files .file-icon {
     width: 24px;
     height: 24px;
     margin-right: 10px;
 }
 
-.post .other-files .file-name {
+.post-other-files .file-name {
     color: white;
     font-size: 16px;
 }
 
-.post .other-files .file-size {
+.post-other-files .file-size {
     font-size: 14px;
 }
 
-.post .other-files .download-file-btn {
+.post-other-files .download-file-btn {
     font-size: 12px;
     color: white;
     margin: auto;
     margin-right: 0;
 }
 
-.post .other-files .download-file-btn:hover {
+.post-other-files .download-file-btn:hover {
     color: var(--accent);
 }
 
-.post .other-files .file:has(.download-file-btn:hover) {
+.post-other-files .file:has(.download-file-btn:hover) {
 	background-color: var(--light-gray-transparent);
 }
 
-.post .media-block img,
-.post .media-block video {
+.post-media-block img,
+.post-media-block video {
     height: 100%;
 	object-fit: cover;
 	max-width: 100%;

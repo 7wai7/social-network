@@ -1,7 +1,6 @@
-import { useEffect, useState, type JSX } from "react";
+import { useEffect, type JSX } from "react";
 import type { AttachedFile } from "../types/attachedFile";
 import "./AttachedFilesPreview.css";
-import type EventEmitter from "../services/EventEmitter";
 import React from "react";
 import { IMAGE_EXTS, VIDEO_EXTS } from "../other/constants";
 
@@ -9,11 +8,11 @@ import { IMAGE_EXTS, VIDEO_EXTS } from "../other/constants";
 
 export default React.memo(function AttachedFilesPreview(
     props: {
-        emitter: EventEmitter,
+        attachedFilesPreview: AttachedFile[],
+        setAttachedFilesPreview: React.Dispatch<React.SetStateAction<AttachedFile[]>>,
         attachFileInputRef: React.RefObject<HTMLInputElement | null>,
     }
 ): JSX.Element {
-    const [attachedFilesPreview, setAttachedFilesPreview] = useState<AttachedFile[]>([]);
 
     const ImgElementPreview = ({ url, id }: { url: string, id: string }): JSX.Element => {
         return (
@@ -73,12 +72,10 @@ export default React.memo(function AttachedFilesPreview(
 
 
     const renderAttachedFilesPreview = (): JSX.Element => {
-        console.log("renderAttachedMediaFilesPreview");
-
         const mediaElements: JSX.Element[] = [];
         const filesElements: JSX.Element[] = [];
 
-        attachedFilesPreview.map(({ file, id, url }) => {
+        props.attachedFilesPreview.map(({ file, id, url }) => {
             const ext = file.name.split('.').pop()?.toLowerCase();
             if (!ext) return;
 
@@ -109,9 +106,9 @@ export default React.memo(function AttachedFilesPreview(
 
 
     const removeFileById = (id: string) => {
-        const file = attachedFilesPreview.find(file => file.id === id);
+        const file = props.attachedFilesPreview.find(file => file.id === id);
         if (file) URL.revokeObjectURL(file.url);
-        setAttachedFilesPreview(prev => prev.filter(file => file.id !== id));
+        props.setAttachedFilesPreview(prev => prev.filter(file => file.id !== id));
     }
 
 
@@ -126,30 +123,8 @@ export default React.memo(function AttachedFilesPreview(
             url: URL.createObjectURL(file),
         }));
 
-        setAttachedFilesPreview(prev => [...prev, ...newFiles]);
+        props.setAttachedFilesPreview(prev => [...prev, ...newFiles]);
     };
-
-
-    useEffect(() => {
-        const onSetAttachedFiles = (files: AttachedFile[]) => {
-            setAttachedFilesPreview(files);
-        }
-
-        props.emitter.on('set-attached-files', onSetAttachedFiles);
-
-        return () => {
-            props.emitter.off('set-attached-files', onSetAttachedFiles);
-        }
-    }, []);
-
-    useEffect(() => {
-        console.log('change emitter');
-
-    }, [props.emitter]);
-
-    useEffect(() => {
-        props.emitter.emit('get-attached-files', attachedFilesPreview);
-    }, [attachedFilesPreview]);
 
     useEffect(() => {
         if (props.attachFileInputRef.current) {

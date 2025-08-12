@@ -3,11 +3,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { CreateMessageDto } from 'src/dto/create-message.dto';
 import { Chat } from 'src/models/chat.model';
 import { ChatParticipants } from 'src/models/chatParticipants.model';
-import * as fs from 'fs';
-import * as path from 'path';
-import { randomUUID } from 'crypto';
 import { User } from 'src/models/users.model';
-import { Op, QueryTypes } from 'sequelize';
+import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Files } from 'src/models/files.model';
 import { Messages, MessagesCreationAttrs } from 'src/models/messages.model';
@@ -74,6 +71,7 @@ export class ChatService {
     }
 
     async getChatMessages(
+        userId: number,
         chatId: number,
         cursor?: string,
         limit: number = 30
@@ -100,12 +98,11 @@ export class ChatService {
             }
         ];
 
-        const messages = await this.messagesModel.findAll({
+        const messages = await this.messagesModel.scope(Messages.withOwnership(userId)).findAll({
             where,
             include,
             order: [['createdAt', 'DESC']],
-            limit,
-            attributes: ['id', 'text', 'chat_id', 'createdAt']
+            limit
         });
 
         // console.log(messages);

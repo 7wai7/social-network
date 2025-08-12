@@ -7,20 +7,29 @@ import './Profile.css'
 import Loader from "../components/Loader";
 
 export default function Profile(
-    props: {
+    {
+        loadingProfile,
+        profile,
+        isLoadingPosts,
+        posts,
+        onClickFollowBtn,
+        handleDeletePost,
+        viewRef,
+    }: {
         loadingProfile: boolean,
         profile: Profile | undefined,
         isLoadingPosts: boolean,
         posts: Post[],
         onClickFollowBtn: () => void,
-        handleDeletePost: (post: Post) => void
+        handleDeletePost: (post: Post) => void,
+        viewRef: (node: Element | null) => void
     }
 ): JSX.Element {
     const { logout } = useUser();
 
     return (
         <>
-            {props.loadingProfile || !props.profile ? (
+            {loadingProfile || !profile ? (
                 <div className='loading'>
                     <div className='loader'></div>
                     <span>Loading...</span>
@@ -28,7 +37,7 @@ export default function Profile(
             ) : (
                 <div className='profile-block'>
                     <img
-                        src={`${props.profile.bannerUrl}`}
+                        src={`${profile.bannerUrl}`}
                         alt="banner"
                         className='banner'
                         onError={(e) => {
@@ -38,7 +47,7 @@ export default function Profile(
                     />
                     <div className='profile-avatar-wrapper'>
                         <img
-                            src={`${props.profile.avatarUrl}`}
+                            src={`${profile.avatarUrl}`}
                             alt="avatar"
                             className='avatar'
                             onError={(e) => {
@@ -49,7 +58,7 @@ export default function Profile(
                     </div>
                     <div className='meta'>
                         {
-                            props.profile.isOwnProfile
+                            profile.isOwnProfile
                                 ? <button
                                     className='logout-btn'
                                     onClick={() => logout()}
@@ -58,26 +67,26 @@ export default function Profile(
                                 </button>
                                 : <button
                                     className='follow-btn'
-                                    onClick={() => props.onClickFollowBtn()}
+                                    onClick={() => onClickFollowBtn()}
                                 >
                                     {
-                                        props.profile.isFollowing
+                                        profile.isFollowing
                                             ? <span>Unfollow</span>
                                             : <span>Follow</span>
                                     }
                                 </button>
                         }
-                        <span className='login'>{props.profile.user.login}</span>
-                        <span className='posts-number'>{props.profile.postsCount} posts</span>
+                        <span className='login'>{profile.user.login}</span>
+                        <span className='posts-number'>{profile.postsCount} posts</span>
                         <div className='follow-data'>
-                            <span className='number'>{props.profile.followingCount || 0}</span>
+                            <span className='number'>{profile.followingCount || 0}</span>
                             <span className='text'>following</span>
-                            <span className='number'>{props.profile.followersCount || 0}</span>
+                            <span className='number'>{profile.followersCount || 0}</span>
                             <span className='text'>followers</span>
                         </div>
-                        {props.profile.about && (
+                        {profile.about && (
                             <div className='about'>
-                                <span className='about-text'>{props.profile.about}</span>
+                                <span className='about-text'>{profile.about}</span>
                                 <button className='show-more-btn'>Show more</button>
                             </div>
                         )}
@@ -85,8 +94,9 @@ export default function Profile(
                     <h2 className='posts-top'>Posts</h2>
                     <div className='h-line'></div>
                     <div className='profile-posts-container'>
-                        {props.posts.map((post) => <FeedPost key={post.id} post={post} handleDeletePost={props.handleDeletePost} />)}
-                        {props.isLoadingPosts && (<Loader />)}
+                        {posts.map((post) => <FeedPost key={post.id} post={post} handleDeletePost={handleDeletePost} />)}
+                        {isLoadingPosts && (<Loader />)}
+                        <div ref={viewRef}></div>
                     </div>
                 </div>
             )}

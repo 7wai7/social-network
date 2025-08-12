@@ -1,0 +1,217 @@
+.single-post-page {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    position: relative;
+}
+
+.single-post-page header {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    box-sizing: border-box;
+    background-color: color-mix(in srgb, var(--background) 80%, rgba(255, 255, 255, 0));
+    backdrop-filter: blur(10px);
+}
+
+.single-post-page header .back-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    padding: 4px;
+    margin-right: 30px;
+}
+
+.single-post-page header .back-btn:hover {
+    background-color: var(--light-gray-transparent);
+}
+
+.single-post-page .title-text {
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    font-family: var(--arial-font);
+}
+
+
+
+.single-post-page .content {
+    margin-top: 10px;
+}
+
+.single-post-page .post-block {
+    padding: 10px;
+    box-sizing: border-box;
+    height: 100%;
+}
+
+
+.single-post-page .post-header {
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+}
+
+.single-post-page .post-meta {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.single-post-page .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.single-post-page .avatar-link {
+    margin-right: 10px;
+    width: max-content;
+    height: max-content;
+}
+
+.single-post-page .post-meta .login {
+    font-size: 20px;
+    font-weight: 500;
+    color: white;
+    margin-right: 10px;
+    font-family: var(--arial-font);
+}
+
+.single-post-page .post-meta .timestamp {
+    color: rgba(211, 211, 211, 0.74);
+    font-size: 12px;
+    font-family: var(--arial-font);
+}
+
+
+.single-post-page .post-header .dropdown-menu-container {
+    margin: auto;
+    margin-right: 0;
+}
+
+.single-post-page .options-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50px;
+    padding: 4px;
+}
+
+.single-post-page .options-btn:hover {
+    background-color: var(--light-gray-transparent);
+}
+
+
+
+
+.write-comment-form {
+    position: sticky;
+    bottom: var(--footer-height);
+    width: 100%;
+    background-color: var(--background);
+    margin-top: 10px;
+}
+
+.write-comment-form .form-inputs {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+    padding: 4px 10px;
+    box-sizing: border-box;
+    margin-top: 10px;
+}
+
+.write-comment-form .attach-file-btn {
+    margin: 6px;
+    width: 24px;
+    height: 24px;
+}
+
+.write-comment-form .avatar-link {
+    margin: 0;
+}
+
+.write-comment-form .send-comment-btn {
+    width: 20px;
+    height: 20px;
+}
+
+
+
+.comments-block {
+    border-top: var(--border);
+    margin-top: 10px;
+}
+
+.comment {
+    padding: 10px;
+    box-sizing: border-box;
+    display: inline-flex;
+    border-bottom: var(--border);
+    width: 100%;
+}
+
+.comment-content {
+    width: 100%;
+}
+
+.comment-header {
+    display: inline-flex;
+    align-items: end;
+    width: 100%;
+}
+
+.comment-header .dropdown-menu-container {
+    margin: auto;
+    margin-right: 0;
+}
+
+.comment-header .profile-link {
+    color: white;
+    font-family: var(--arial-font);
+    font-size: 18px;
+    margin-right: 10px;
+}
+.comment-header .comment-time {
+    color: rgb(196, 196, 196);
+    font-family: var(--arial-font);
+    font-size: 12px;
+}
+
+.comment .comment-text {
+    margin-top: 10px;
+    color: white;
+    font-family: var(--arial-font);
+    font-size: 14px;
+}
+
+.comment .comment-bottom {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.comment .replies-btn {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.comment .replies-btn:hover path {
+    fill: var(--accent)
+}
+
+.comment .reply-btn {
+    color: white;
+    font-size: 12px;
+}
+
+.comment .reply-btn:hover {
+    color: var(--accent);
+}

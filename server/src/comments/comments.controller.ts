@@ -1,86 +1,52 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Query, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CommentsService } from './comments.service';
-import { CommentDto } from 'src/dto/create-comment.dto';
+import { CommentDto, CreateCommentDto } from 'src/dto/create-comment.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.quard';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { InjectModel } from '@nestjs/sequelize';
-import { CommentFile } from 'src/models/commentFiles.model';
-import { Response } from 'express';
-import * as fs from 'fs';
-import * as path from 'path';
+import { ReqUser } from 'src/decorators/ReqUser';
+import { CreateFileDto } from 'src/dto/create-file.dto';
 
 @Controller('comments')
 export class CommentsController {
     constructor(
         private readonly commentsService: CommentsService,
-        @InjectModel(CommentFile) private commentFileModel: typeof CommentFile,
     ) {}
 
     
     @Get("/post/:id")
-    async getCommentsByPostId(@Param('id') id: string) {
+    @UseGuards(JwtAuthGuard)
+    getCommentsByPostId(
+        @ReqUser() user,
+        @Param('id') id: string,
+        @Query('cursor') cursor?: string,
+        @Query('limit') limit?: number
+    ) {
+        
         const post_id = parseInt(id);
         if (Number.isNaN(post_id)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
-
-        return await this.commentsService.getCommentsByPostId(post_id);
-    }
-    
-    @Get("file/:id")
-    async getPostFile(@Param('id') id: string, @Res() res: Response) {
-        const comment_file_id = parseInt(id);
-        if(Number.isNaN(comment_file_id)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
-        
-        const postFile = await this.commentFileModel.findByPk(comment_file_id);
-        if (!postFile) {
-            throw new HttpException('Row not found', HttpStatus.NOT_FOUND);
-        }
-
-        const plainPostFile = postFile.get({ plain: true });
-
-        const pathFile = path.join(
-            __dirname,
-            '..',
-            '..',
-            'data',
-            'comments',
-            `comment_${plainPostFile.comment_id}`,
-            plainPostFile.filename
-        );
-
-        if (!fs.existsSync(pathFile)) {
-            throw new HttpException('File not found on disk', HttpStatus.NOT_FOUND);
-        }
-
-        res.setHeader('Content-Type', plainPostFile.mimetype);
-        return res.sendFile(pathFile);
+        return this.commentsService.getCommentsByPostId(user.id, post_id, cursor, limit);
     }
 
-
-    @Post("/post/:id")
+    @Post()
     @UseGuards(JwtAuthGuard)
     @UseInterceptors(FilesInterceptor('files'))
     async createComment(
-        @Req() req,
-        @Param('id') id: string,
-        @Body() body: { text: string },
-        @UploadedFiles() files: Array<Express.Multer.File>
+        @ReqUser() user,
+        @Body() body: { post_id: number, text: string, files?: CreateFileDto[]},
     ) {
-        const post_id = parseInt(id);
-        if (Number.isNaN(post_id)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
-
         return this.commentsService.createComment({
-            user_id: req.user.id,
-            post_id,
-            text: body.text
-        }, files)
+            ...body,
+            user_id: user.id
+        })
     }
 
 
     @Delete('/:id')
-    deleteComment(@Param('id') id: string) {
+    @UseGuards(JwtAuthGuard)
+    deleteComment(@ReqUser() user, @Param('id') id: string) {
         const id_ = parseInt(id);
         if (Number.isNaN(id_)) throw new HttpException('Not correct id', HttpStatus.BAD_REQUEST);
 
-        this.commentsService.deleteComment(id_);
+        this.commentsService.deleteCommentByOwner(user.id, id_);
     }
 }

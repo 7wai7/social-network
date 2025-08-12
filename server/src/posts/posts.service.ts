@@ -19,6 +19,24 @@ export class PostsService {
         @Inject(Sequelize) private readonly sequelize: Sequelize,
     ) { }
 
+    async getPost(userId: number, id: number) {
+        return await this.postsModel.scope(Post.withOwnership(userId)).findByPk(id, {
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'login']
+                },
+                {
+                    model: Files,
+                    as: 'files',
+                    through: { attributes: [] }, // щоб не повертати колонки зв’язувальної таблиці
+                    required: false, // LEFT JOIN
+                }
+            ],
+        })
+    }
+
     async getUserPostsCount(userId: number) {
         const posts = await this.postsModel.findAll({
             where: {
@@ -200,7 +218,7 @@ export class PostsService {
         const post = await this.postsModel.findOne({ where: { id } })
         if (!post) throw new HttpException("Post not found", HttpStatus.NOT_FOUND);
         const plainPost = post.get({ plain: true });
-        if (plainPost.user_id !== userId) throw new HttpException('Forbidden: not your message', HttpStatus.FORBIDDEN);
+        if (plainPost.user_id !== userId) throw new HttpException('Forbidden: not your post', HttpStatus.FORBIDDEN);
 
         return await this.deletePost(id);
     }

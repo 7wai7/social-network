@@ -17,7 +17,6 @@ type ContextType = {
 
 export default function Messages(): JSX.Element {
     const context = useOutletContext<ContextType>();
-    const messagesEmitterRef = useRef(new EventEmitter());
 
     const [textareaText, setTextareaText] = useState('');
     const [allMessages, setAllMessages] = useState<Message[]>([]);
@@ -30,6 +29,7 @@ export default function Messages(): JSX.Element {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const messagesWrapperRef = useRef<HTMLDivElement>(null);
     const attachedFilesRef = useRef<AttachedFile[]>([]);
+    const [attachedFilesPreview, setAttachedFilesPreview] = useState<AttachedFile[]>([]);
 
     const [isReceivedMessage, setIsReceivedMessage] = useState(false);
     const [hasMoreMessages, setHasMoreMessages] = useState(true);
@@ -37,11 +37,11 @@ export default function Messages(): JSX.Element {
     const { data } = useQuery({
         queryKey: ['chat-messages', queryVersion],
         queryFn: () => {
-            if(!context.selectedChat?.id) return;
+            if (!context.selectedChat?.id) return;
 
             const lastMessage = allMessages.at(-1);
             console.log("lastMessage", lastMessage);
-            return fetchMessages(context.selectedChat.id, lastMessage?.createdAt, 2)
+            return fetchMessages(context.selectedChat.id, lastMessage?.createdAt)
         },
         enabled: !!context.selectedChat && hasMoreMessages,
     });
@@ -90,17 +90,11 @@ export default function Messages(): JSX.Element {
             console.log(err)
         }
 
-
-        const onGetAttachedFiles = (files: AttachedFile[]) => {
-            attachedFilesRef.current = files;
-        }
-
         socketRef.current.on('chat-message', onChatMessage);
         socketRef.current.on('delete-message', onDeleteMessage);
         socketRef.current.on('update-message', onUpdateMessage);
         socketRef.current.on('chat-message-error', onChatMessageError);
         socketRef.current.on('delete-message-error', onDeleteMessageError);
-        messagesEmitterRef.current.on('get-attached-files', onGetAttachedFiles);
 
         return () => {
             socketRef.current.off('chat-message', onChatMessage);
@@ -108,7 +102,6 @@ export default function Messages(): JSX.Element {
             socketRef.current.off('update-message', onUpdateMessage);
             socketRef.current.off('chat-message-error', onChatMessageError);
             socketRef.current.off('delete-message-error', onDeleteMessageError);
-            messagesEmitterRef.current.on('get-attached-files', onGetAttachedFiles);
         };
     }, []);
 
@@ -212,7 +205,7 @@ export default function Messages(): JSX.Element {
             setTextareaText('');
             setEditedMessage(null);
             setEditedMessageSelectedFilesToDelete([]);
-            messagesEmitterRef.current.emit('set-attached-files', []);
+            setAttachedFilesPreview([]);
         }
 
         if (attachedFilesRef.current.length > 0 || editedMessageSelectedFilesToDelete.length > 0) {
@@ -234,27 +227,28 @@ export default function Messages(): JSX.Element {
         } else sendMessageData();
     };
 
-    const deleteMessage = (id: number) => {
+    const deleteMessage = useCallback((id: number) => {
         socketRef.current.emit('delete-message', { id });
-    }
+    }, [socketRef.current])
 
-    const editMessage = (m: Message) => {
+    const editMessage = useCallback((m: Message) => {
         if (m.chat_id !== context.selectedChat?.id) return;
 
         setEditedMessage(m);
         setTextareaText(m.text);
         setEditedMessageSelectedFilesToDelete([]);
-    }
+    }, []);
 
-    const cancelEditingMessage = () => {
+    const cancelEditingMessage = useCallback(() => {
         setEditedMessage(null);
         setTextareaText('');
         setEditedMessageSelectedFilesToDelete([]);
-    }
+    }, [])
 
     return <MessagesUI
         layoutEmitter={context.layoutEmitter}
-        messagesEmitter={messagesEmitterRef.current}
+        attachedFilesPreview={attachedFilesPreview}
+        setAttachedFilesPreview={setAttachedFilesPreview}
         messagesWrapperRef={messagesWrapperRef}
         textareaRef={textareaRef}
         textareaText={textareaText}

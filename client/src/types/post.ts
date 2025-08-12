@@ -3,7 +3,7 @@ import type { User } from "./user";
 
 export interface Post {
 	id: number,
-	text: string,
+	text?: string,
 	createdAt: string,
 	files: File[],
 	user: User,
