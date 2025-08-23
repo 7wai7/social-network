@@ -6,6 +6,7 @@ export interface Post {
 	text?: string,
 	createdAt: string,
 	files: File[],
+	tags: { name: string }[],
 	user: User,
 	isOwnPost: boolean
 }

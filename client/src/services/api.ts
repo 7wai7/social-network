@@ -53,7 +53,7 @@ export async function fetchRegister(
 
 export async function fetchLogin(
 	body: {
-		email: string,
+		login: string,
 		password: string
 	}
 ): Promise<User> {
@@ -111,11 +111,12 @@ export async function fetchSearch(login: string, limit: number = 20): Promise<Us
 
 
 
-export async function fetchFeed(cursor?: string, limit: number = 20): Promise<Post[]> {
+export async function fetchFeed(cursor?: number, refresh = false, limit: number = 20): Promise<Post[]> {
 	return await fetch(api.get('/api/posts/news/feed', {
 		params: {
 			cursor,
-			limit
+			limit,
+			refresh
 		}
 	}));
 }
@@ -124,7 +125,7 @@ export async function fetchGetPost(id: number): Promise<Post> {
 	return await fetch(api.get(`/api/posts/${id}`));
 }
 
-export async function fetchCreatePost(post: { text: string, files?: File[] }): Promise<number> {
+export async function fetchCreatePost(post: { text: string, tags?: string[], files?: File[] }): Promise<number> {
 	return await fetch(
 		api.post('/api/posts',
 			post,
@@ -160,11 +161,11 @@ export async function fetchUserChats(): Promise<Chat[]> {
 	return await fetch(api.get(`/api/chats`));
 }
 
-export async function fetchFindChatUsersByLogin(login: string): Promise<ChatUser[]> {
+export async function fetchFindChatUsersByLogin(login: string, limit?: number): Promise<ChatUser[]> {
 	return await fetch(
-		api.get(`/api/chats/find`, {
+		api.get(`/api/chats/find/${login}`, {
 			params: {
-				login
+				limit
 			}
 		})
 	);

@@ -38,9 +38,7 @@ export default function Messages(): JSX.Element {
         queryKey: ['chat-messages', queryVersion],
         queryFn: () => {
             if (!context.selectedChat?.id) return;
-
             const lastMessage = allMessages.at(-1);
-            console.log("lastMessage", lastMessage);
             return fetchMessages(context.selectedChat.id, lastMessage?.createdAt)
         },
         enabled: !!context.selectedChat && hasMoreMessages,
@@ -57,8 +55,6 @@ export default function Messages(): JSX.Element {
     }, [data]);
 
     useEffect(() => {
-        console.log("context.selectedChat", context.selectedChat);
-
         setQueryVersion(Date.now());
         setAllMessages([]);
         setHasMoreMessages(true);
@@ -67,7 +63,6 @@ export default function Messages(): JSX.Element {
 
     useEffect(() => {
         const onChatMessage = (newMessage: Message) => {
-            console.log("New message", newMessage);
             setAllMessages(prev => [newMessage, ...prev]);
             setIsReceivedMessage(true);
         };
@@ -77,8 +72,6 @@ export default function Messages(): JSX.Element {
         }
 
         const onUpdateMessage = (updatedMessage: Message) => {
-            console.log('updated message', updatedMessage);
-
             setAllMessages(prev => prev.map(m => m.id === updatedMessage.id ? { ...m, ...updatedMessage } : m))
         }
 

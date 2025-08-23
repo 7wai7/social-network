@@ -52,8 +52,6 @@ export class CommentsService {
     }
 
     async createComment(commentDto: CreateCommentDto) {
-        console.log("commentDto", commentDto);
-
         const post = await this.postsModel.findByPk(commentDto.post_id);
         if (!post) throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
         if (!commentDto.text?.trim() && !commentDto.files?.length) throw new HttpException('Comment must contain either text or at least one file.', HttpStatus.FORBIDDEN);

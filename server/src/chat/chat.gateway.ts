@@ -25,8 +25,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @ConnectedSocket() client: Socket
     ) {
         const user = client.handshake['user'];
-        console.log("join-chat user", user);
-        console.log("join-chat", chatId);
 
         if (chatId) {
             client.join(chatId);

@@ -2,21 +2,24 @@ import { Model, Column, DataType, Table, ForeignKey, BelongsTo, BelongsToMany, H
 import { User } from "./users.model";
 import { Files } from "./files.model";
 import { PostFiles } from "./postFiles.model";
+import { Tags } from "./tags.model";
+import { PostTags } from "./postTags.model";
+import { PostViews } from "./postViews.model";
+import { CreationOptional } from "sequelize";
 
 export interface PostsCreationAttrs {
-	user_id: number;
-	text: string;
+    user_id: number;
+    text: string;
 }
 
-@Table({ tableName: 'posts' })
+@Table({ tableName: 'posts', timestamps: true, updatedAt: false })
 export class Post extends Model<Post, PostsCreationAttrs> {
-	@ForeignKey(() => User)
-	@Column({ type: DataType.INTEGER, allowNull: false })
-	user_id: number;
+    @ForeignKey(() => User)
+    @Column({ type: DataType.INTEGER, allowNull: false })
+    user_id: number;
 
-	@Column({ type: DataType.STRING, allowNull: true })
-	text: string;
-
+    @Column({ type: DataType.STRING, allowNull: true })
+    text: string;
 
     @Column({ type: DataType.VIRTUAL })
     isOwnPost: boolean;
@@ -37,9 +40,20 @@ export class Post extends Model<Post, PostsCreationAttrs> {
     }
 
 
-	@BelongsToMany(() => Files, () => PostFiles)
-	files: Files[];
+    @BelongsToMany(() => Files, () => PostFiles)
+    files: Files[];
 
-	@BelongsTo(() => User, { as: 'user' })
-	user: User;
+    @BelongsTo(() => User, { as: 'user' })
+    user: User;
+
+    @BelongsToMany(() => Tags, () => PostTags)
+    tags: Tags[];
+
+    @HasMany(() => PostViews, { as: 'views' })
+    views: PostViews[];
+
+}
+
+function CreateDateColumn(): (target: Post, propertyKey: "createdAt") => void {
+    throw new Error("Function not implemented.");
 }

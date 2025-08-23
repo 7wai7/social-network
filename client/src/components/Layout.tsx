@@ -24,6 +24,8 @@ export default function Layout(): JSX.Element {
     const [menuButtons, setMenuButtons] = useState<JSX.Element>(<></>);
     const lastContextTargetRef = useRef<EventTarget | null>(null);
 
+    const [refreshFeed, setRefreshFeed] = useState(true);
+
     useEffect(() => {
         const connect = () => {
             console.log("✅ Connected to server with id:", socketRef.current.id);
@@ -109,7 +111,7 @@ export default function Layout(): JSX.Element {
         <>
             <PostModal layoutEmitter={layoutEmitterRef.current} />
             <div className='info'>
-                <LeftNavBar />
+                <LeftNavBar setRefreshFeed={setRefreshFeed}/>
                 <main>
                     <Outlet
                         context={{
@@ -117,6 +119,8 @@ export default function Layout(): JSX.Element {
                             selectedChat,
                             setSelectedChat,
                             lastChatMessage,
+                            refreshFeed,
+                            setRefreshFeed
                         }}
                     />
                 </main>

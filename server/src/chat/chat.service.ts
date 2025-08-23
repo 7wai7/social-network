@@ -42,7 +42,7 @@ export class ChatService {
         return chats[0];
     }
 
-    async findUsersAndChatsByLogin(userId: number, login: string) {
+    async findUsersAndChatsByLogin(userId: number, login: string, limit: number = 8) {
         const chats = await this.sequelize.query(`
             SELECT 
             u.id AS user_id,
@@ -63,7 +63,8 @@ export class ChatService {
                 INNER JOIN chats c ON c.id = cp1.chat_id
             ) c ON c.user_id = u.id
             WHERE u.id != ${userId} AND u.login ILIKE '%${login}%'
-            ORDER BY u.login
+            ORDER BY u.login ASC
+            LIMIT ${limit}
             `)
 
         // console.log(chats[0]);

@@ -14,6 +14,8 @@ const PostModal = (
     const [attachedFilesPreview, setAttachedFilesPreview] = useState<AttachedFile[]>([]);
 
     const [text, setText] = useState('');
+    const [addTagText, setAddTagText] = useState('');
+    const [tags, setTags] = useState<string[]>([]);
 
     useEffect(() => {
         const onOpenModal = () => {
@@ -23,6 +25,8 @@ const PostModal = (
             postModalRef.current?.setAttribute('hidden', '');
             setText('');
             setAttachedFilesPreview([]);
+            setTags([]);
+            setAddTagText('');
         }
 
         props.layoutEmitter.on('open-post-modal', onOpenModal)
@@ -38,7 +42,7 @@ const PostModal = (
         if (!text.trim() && attachedFilesPreview.length == 0) return;
 
         const publish = (files?: File[]) => {
-            fetchCreatePost({ text, files })
+            fetchCreatePost({ text, tags, files })
                 .then(post => {
                     props.layoutEmitter.emit('add-profile-post', post);
                     props.layoutEmitter.emit('close-post-modal');
@@ -62,10 +66,30 @@ const PostModal = (
     };
 
 
+    const onKeydownAddTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if(tags.length > 5) return;
+
+        if ((e.code === 'Enter' || e.keyCode === 13)) {
+            e.preventDefault();
+            setTags(prev => [...prev.filter(tag => tag !== addTagText), addTagText]);
+            setAddTagText('');
+        }
+    }
+
+    const onClickDeleteTag = (deleteTag: string) => {
+        setTags(prev => prev.filter(tag => tag !== deleteTag));
+    }
+
+
     return <PostModalUI
         layoutEmitter={props.layoutEmitter}
         text={text}
         setText={setText}
+        addTagText={addTagText}
+        setAddTagText={setAddTagText}
+        tags={tags}
+        onKeydownAddTagInput={onKeydownAddTagInput}
+        onClickDeleteTag={onClickDeleteTag}
         postModalRef={postModalRef}
         attachedFilesPreview={attachedFilesPreview}
         setAttachedFilesPreview={setAttachedFilesPreview}

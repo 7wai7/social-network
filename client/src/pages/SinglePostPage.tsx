@@ -34,8 +34,6 @@ export default function SinglePostPage(): JSX.Element {
     } = useInfiniteQuery({
         queryKey: ['comments', postId],
         queryFn: ({ pageParam = undefined }: { pageParam: string | undefined }) => {
-            console.log("fetch comments");
-            
             if (!post) return [];
             return fetchComments(post.id, pageParam, 5);
         },
@@ -59,8 +57,6 @@ export default function SinglePostPage(): JSX.Element {
     }, []);
 
     const onSubmitComment = (event?: any) => {
-        console.log("event", event);
-
         event?.preventDefault();
         if (!postId) return;
 
@@ -73,8 +69,6 @@ export default function SinglePostPage(): JSX.Element {
 
             fetchCreateComment(comment)
                 .then(newComment => {
-                    console.log("newComment", newComment);
-                    
                     queryClient.setQueryData(['comments', postId], (oldData: any) => {
                         if (!oldData) return oldData;
 

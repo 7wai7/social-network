@@ -4,7 +4,7 @@ import Avatar from "./Avatar";
 import { Link } from "react-router-dom";
 import Dropdown from "./Dropdown";
 import { timeAgo } from "../other/globals";
-import { renderPostFiles } from "./FeedPost";
+import AttachedFiles from "./AttachedFiles";
 
 
 
@@ -12,7 +12,9 @@ const RenderComment = ({ c }: { c: Comment }): JSX.Element => {
     const getCommentDropdownItems = useCallback((c: Comment) => {
         return c.isOwnComment
             ? [{ text: "Delete comment" }]
-            : [{ text: "Report", onClick: () => console.log("Report comment") }];
+            : [
+                // { text: "Report", onClick: () => console.log("Report comment") }
+            ];
     }, []);
 
     return <>
@@ -35,7 +37,7 @@ const RenderComment = ({ c }: { c: Comment }): JSX.Element => {
                     />
                 </div>
                 {c.text.trim() && <div className="comment-text">{c.text}</div>}
-                {renderPostFiles(c.files)}
+                <AttachedFiles attachedFiles={c.files} />
                 <div className="comment-bottom">
                     <button className="replies-btn">
                         <svg

@@ -1,4 +1,4 @@
-import { useEffect, useState, type JSX } from "react";
+import { type JSX } from "react";
 import "./AttachedFilesPreview.css";
 import React from "react";
 import type { File } from "../types/file";
@@ -6,11 +6,12 @@ import { IMAGE_EXTS, VIDEO_EXTS } from "../other/constants";
 import { downloadFile, formatBytes } from "../other/globals";
 
 export default React.memo(function AttachedFiles(
-    props: {
+    {
+        attachedFiles
+    }: {
         attachedFiles: File[]
     }
 ): JSX.Element {
-    // const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
     const ImgElementPreview = ({ url }: { url: string }): JSX.Element => {
         return (
@@ -59,7 +60,7 @@ export default React.memo(function AttachedFiles(
         const mediaElements: JSX.Element[] = [];
         const filesElements: JSX.Element[] = [];
 
-        props.attachedFiles.map((file) => {
+        attachedFiles.map((file) => {
             const ext = file.originalname.split('.').pop()?.toLowerCase();
             if (!ext) return;
 
@@ -89,9 +90,7 @@ export default React.memo(function AttachedFiles(
     }
 
 
-    // useEffect(() => {
-    //     if (props.attachedFiles) setAttachedFiles(props.attachedFiles);
-    // }, [props.attachedFiles]);
+    if (attachedFiles.length == 0) return <></>
 
     return (
         <div className="attached-files-container">

@@ -7,7 +7,11 @@ import { IMAGE_EXTS, VIDEO_EXTS } from "../other/constants";
 
 
 export default React.memo(function AttachedFilesPreview(
-    props: {
+    {
+        attachedFilesPreview,
+        setAttachedFilesPreview,
+        attachFileInputRef,
+    }: {
         attachedFilesPreview: AttachedFile[],
         setAttachedFilesPreview: React.Dispatch<React.SetStateAction<AttachedFile[]>>,
         attachFileInputRef: React.RefObject<HTMLInputElement | null>,
@@ -52,7 +56,8 @@ export default React.memo(function AttachedFilesPreview(
                 <div className="file-icon">
                     <svg
                         viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="#fff">
                         <path d="M6 10h12v1H6zM3 1h12.29L21 6.709V23H3zm12 6h5v-.2L15.2 2H15zM4 22h16V8h-6V2H4zm2-7h12v-1H6zm0 4h9v-1H6z">
                         </path>
                     </svg>
@@ -75,7 +80,7 @@ export default React.memo(function AttachedFilesPreview(
         const mediaElements: JSX.Element[] = [];
         const filesElements: JSX.Element[] = [];
 
-        props.attachedFilesPreview.map(({ file, id, url }) => {
+        attachedFilesPreview.map(({ file, id, url }) => {
             const ext = file.name.split('.').pop()?.toLowerCase();
             if (!ext) return;
 
@@ -106,9 +111,9 @@ export default React.memo(function AttachedFilesPreview(
 
 
     const removeFileById = (id: string) => {
-        const file = props.attachedFilesPreview.find(file => file.id === id);
+        const file = attachedFilesPreview.find(file => file.id === id);
         if (file) URL.revokeObjectURL(file.url);
-        props.setAttachedFilesPreview(prev => prev.filter(file => file.id !== id));
+        setAttachedFilesPreview(prev => prev.filter(file => file.id !== id));
     }
 
 
@@ -123,14 +128,17 @@ export default React.memo(function AttachedFilesPreview(
             url: URL.createObjectURL(file),
         }));
 
-        props.setAttachedFilesPreview(prev => [...prev, ...newFiles]);
+        setAttachedFilesPreview(prev => [...prev, ...newFiles]);
     };
 
     useEffect(() => {
-        if (props.attachFileInputRef.current) {
-            props.attachFileInputRef.current.onchange = handleFileChange;
+        if (attachFileInputRef.current) {
+            attachFileInputRef.current.onchange = handleFileChange;
         }
-    }, [props.attachFileInputRef]);
+    }, [attachFileInputRef]);
+
+
+    if (attachedFilesPreview.length == 0) return <></>
 
     return (
         <div className="attached-files-container preview">

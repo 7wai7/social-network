@@ -19,10 +19,22 @@ export class CreatePostDto {
     @MaxLength(5000)
     readonly text: string;
 
+
     @ApiProperty({
-        type: [CreateFileDto],
+        description: 'Теги поста',
+        type: 'array',
+        items: {
+            type: 'string',
+            example: 'coding'
+        }
+    })
+    @IsOptional()
+    @IsArray()
+    readonly tags?: string[];
+
+    @ApiProperty({
         description: 'Файли для прикріплення до поста',
-        required: false
+        type: [CreateFileDto],
     })
     @IsOptional()
     @IsArray()
@@ -45,6 +57,16 @@ export class PostDto {
 
     @ApiProperty({ example: 'Мій перший пост' })
     readonly text: string;
+
+    @ApiProperty({
+        description: 'Теги поста',
+        type: 'array',
+        items: {
+            type: 'string',
+            example: 'coding'
+        }
+    })
+    readonly tags?: string[];
 
     @ApiProperty({
         type: [FileDto],

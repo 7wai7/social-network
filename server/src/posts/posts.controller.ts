@@ -10,6 +10,7 @@ import { CreatePostDto, PostDto } from 'src/dto/create-post.dto';
 import { PostsCreationAttrs } from 'src/models/posts.model';
 import { CreateFileDto } from 'src/dto/create-file.dto';
 import { ReqUser } from 'src/decorators/ReqUser';
+import { UserDto } from 'src/dto/login-user.dto';
 
 @Controller('/posts')
 export class PostsController {
@@ -99,12 +100,12 @@ export class PostsController {
 
 
     @ApiOperation({
-        summary: 'Завантаження новин для користувача',
-        description: 'Повертає стрічку новин з постами користувачів, на яких підписаний поточний користувач. Підтримує пагінацію через cursor-based pagination.'
+        summary: 'Завантаження рекомендацій для користувача',
+        description: 'Повертає стрічку рекомендацій. Підтримує пагінацію через cursor-based pagination.'
     })
     @ApiQuery({
         name: 'cursor',
-        description: 'Cursor для пагінації (дата створення останнього поста з попередньої сторінки)',
+        description: 'Cursor для пагінації (id останнього поста з попередньої сторінки)',
         required: false,
         type: 'string',
         example: '2024-01-15T10:30:00.000Z',
@@ -112,7 +113,7 @@ export class PostsController {
     })
     @ApiResponse({
         status: 200,
-        description: 'Стрічка новин успішно завантажена',
+        description: 'Стрічка успішно завантажена',
         type: [PostDto]
     })
     @ApiResponse({
@@ -129,9 +130,42 @@ export class PostsController {
     @ApiCookieAuth('token')
     @UseGuards(JwtAuthGuard)
     @Get('/news/feed')
-    async getNewsFeed(@Req() req, @Query('cursor') cursor?: string, @Query('limit') limit?: number) {
-        return await this.postsService.getNewsFeed(req.user.id, cursor, limit);
+    getNewsFeed(
+        @ReqUser() user: UserDto,
+        @Query('cursor') cursor?: number,
+        @Query('limit') limit?: number,
+        @Query('refresh') refresh?: boolean,
+    ) {
+        return this.postsService.getNewsFeed(user.id, cursor, limit, refresh);
     }
+
+
+
+
+    @ApiOperation({
+        summary: 'Завантаження постів користувачів на котрих підписався заданий користувач',
+        description: 'Повертає стрічку постів користувачів, на котрих підписаний поточний користувач. Підтримує пагінацію через cursor-based pagination.'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Стрічка успішно завантажена',
+        type: [PostDto]
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Користувач не авторизований'
+    })
+    @ApiCookieAuth('token')
+    @UseGuards(JwtAuthGuard)
+    @Get('/news/follows')
+    getFollowingPosts(
+        @ReqUser() user: UserDto,
+        @Query('cursor') cursor?: string,
+        @Query('limit') limit?: number
+    ) {
+        return this.postsService.getFollowingPosts(user.id, cursor, limit);
+    }
+
 
 
 
@@ -154,13 +188,35 @@ export class PostsController {
     @Post()
     @UseGuards(JwtAuthGuard)
     async createPost(
-        @Req() req,
-        @Body() body: { text: string, files?: CreateFileDto[]}
+        @ReqUser() user: UserDto,
+        @Body() body: { text: string, files?: CreateFileDto[] }
     ) {
         return await this.postsService.createPost({
             ...body,
-            user_id: req.user.id,
+            user_id: user.id,
         })
+    }
+
+
+
+
+
+
+    @ApiOperation({
+        summary: 'Генерація поста поста',
+    })
+    @ApiResponse({
+        status: 201,
+        description: 'Пост успішно створено',
+        type: PostDto
+    })
+    @ApiCookieAuth('token')
+    @Post('/generate')
+    @UseGuards(JwtAuthGuard)
+    generatePost(
+        @ReqUser() user: UserDto,
+    ) {
+        return this.postsService.generatePost(user.id)
     }
 
 

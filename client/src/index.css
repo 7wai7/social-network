@@ -15,7 +15,6 @@ body {
 }
 
 .info {
-	/* width: 1200px; */
 	display: flex;
 	height: 100%;
 	box-sizing: border-box;
@@ -24,7 +23,6 @@ body {
 
 main {
 	width: var(--main-width);
-	/* flex: 1; */
 	display: flex;
 	margin-left: var(--left-nav-bar-width);
 	margin-right: var(--right-sidebar-width);

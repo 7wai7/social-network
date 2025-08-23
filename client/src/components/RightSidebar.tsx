@@ -53,7 +53,7 @@ const RightSidebar = (
                                     {data.map(user =>
                                         <Link to={`/profile/${user.login}`} key={user.id} className="search-item">
                                             <img
-                                                src={user.avatarUrl}
+                                                src={`http://localhost:3000/avatars/${user.login}`}
                                                 alt={`${user.login}`}
                                                 className='avatar'
                                                 onError={(e) => {

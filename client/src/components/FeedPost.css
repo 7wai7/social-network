@@ -58,10 +58,6 @@
     fill: white;
 }
 
-
-
-
-
 .post-text {
     color: white;
     word-wrap: break-word;
@@ -69,68 +65,17 @@
     margin-top: 10px;
 }
 
-.post-media-block {
-	display: flex;
-    align-items: center;
-    justify-content: center;
-	flex-wrap: wrap;
-	gap: 6px;
-    margin-top: 20px;
-}
 
-.post-other-files {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    gap: 6px;
-    margin-top: 20px;
-}
 
-.post-other-files .file {
+.tags-list {
+    margin-top: 20px;
+    height: 24px;
     display: flex;
     flex-direction: row;
-    align-items: center;
-    width: 100%;
-    border-radius: 4px;
-    padding: 2px 0;
-    box-sizing: border-box;
+    gap: 20px;
 }
 
-.post-other-files .file-icon {
-    width: 24px;
-    height: 24px;
-    margin-right: 10px;
-}
-
-.post-other-files .file-name {
-    color: white;
-    font-size: 16px;
-}
-
-.post-other-files .file-size {
+.tag-link {
     font-size: 14px;
-}
-
-.post-other-files .download-file-btn {
-    font-size: 12px;
-    color: white;
-    margin: auto;
-    margin-right: 0;
-}
-
-.post-other-files .download-file-btn:hover {
-    color: var(--accent);
-}
-
-.post-other-files .file:has(.download-file-btn:hover) {
-	background-color: var(--light-gray-transparent);
-}
-
-.post-media-block img,
-.post-media-block video {
-    height: 100%;
-	object-fit: cover;
-	max-width: 100%;
-	max-height: 400px;
-	border-radius: 8px;
+    color: rgb(131, 131, 255);
 }

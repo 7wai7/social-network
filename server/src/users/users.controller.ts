@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.quard';
 import { InjectModel } from '@nestjs/sequelize';
@@ -6,6 +6,7 @@ import { User } from 'src/models/users.model';
 import { ApiBearerAuth, ApiCookieAuth, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { UserDto } from 'src/dto/login-user.dto';
 import { UserProfileDto } from 'src/dto/user-profile.dto';
+import { ReqUser } from 'src/decorators/ReqUser';
 
 @Controller('users')
 export class UsersController {
@@ -116,8 +117,12 @@ export class UsersController {
     @ApiCookieAuth('token')
     @UseGuards(JwtAuthGuard)
     @Get("/find/:login")
-    findUsers(@Param('login') login: string, @Req() req) {
-        return this.userService.findUsersByLogin(req.user.id, login);
+    findUsers(
+        @ReqUser() user,
+        @Param('login') login: string,
+        @Query('limit') limit: number
+    ) {
+        return this.userService.findUsersByLogin(user.id, login, limit);
     }
 
 

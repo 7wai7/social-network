@@ -56,8 +56,6 @@ const RenderMessage = React.memo((
         editMessage: (m: Message) => void
     }
 ): JSX.Element => {
-    console.log("render renderMessage", m);
-
     const buttons: JSX.Element =
         <>
             {

@@ -37,7 +37,7 @@ export class UsersService {
         return users;
     }
 
-    async findUsersByLogin(userId: number, login: string) {
+    async findUsersByLogin(userId: number, login: string, limit: number = 8) {
         return await this.userModel.findAll({
             where: {
                 id: {
@@ -46,7 +46,9 @@ export class UsersService {
                 login: {
                     [Op.iLike]: `%${login}%`
                 }
-            }
+            },
+            order: [['login', 'ASC']],
+            limit
         })
     }
 
@@ -164,7 +166,11 @@ export class UsersService {
         await this.followModel.destroy({
             where: { follower_id, following_id },
         });
-        return { success: true }
+
+        return {
+            following: false,
+            userId: following_id
+        }
     }
 
 }

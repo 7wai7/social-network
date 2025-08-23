@@ -69,8 +69,6 @@ export class ChatController {
     @Get()
     @UseGuards(JwtAuthGuard)
     getUserChats(@Req() req) {
-        console.log("getUserChats", req.user.id);
-
         return this.chatService.getUserChats(req.user.id);
     }
 
@@ -111,11 +109,14 @@ export class ChatController {
         description: 'Користувач не авторизований'
     })
     @ApiCookieAuth('token')
-    @Get("/find")
+    @Get("/find/:login")
     @UseGuards(JwtAuthGuard)
-    GetUsersAndChatsByLogin(@Req() req, @Query() query) {
-        console.log("GetUsersAndChatsByLogin", req.user.id);
-        return this.chatService.findUsersAndChatsByLogin(req.user.id, query.login);
+    GetUsersAndChatsByLogin(
+        @ReqUser() user,
+        @Param('login') login: string,
+        @Query('limit') limit: number
+    ) {
+        return this.chatService.findUsersAndChatsByLogin(user.id, login, limit);
     }
 
 

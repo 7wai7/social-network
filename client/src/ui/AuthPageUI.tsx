@@ -39,18 +39,18 @@ export default function AuthPageUI(
                         ? <h2>Sign up</h2>
                         : <h2>Sign in</h2>
                 }
-                {
-                    props.isSignup
-                        ? <div className="input-wrapper">
-                            <input type="text" required placeholder="login" value={props.login} onChange={(e) => props.setLogin(e.target.value)} className="login-input" ref={props.inputRefs.login} />
-                            <span className="error-message" hidden ref={props.messageRefs.login}>message</span>
-                        </div>
-                        : ''
-                }
                 <div className="input-wrapper">
-                    <input type="email" required placeholder="email" value={props.email} onChange={(e) => props.setEmail(e.target.value)} className="email-input" ref={props.inputRefs.email} />
-                    <span className="error-message" hidden ref={props.messageRefs.email}>message</span>
+                    <input type="text" required placeholder="login" value={props.login} onChange={(e) => props.setLogin(e.target.value)} className="login-input" ref={props.inputRefs.login} />
+                    <span className="error-message" hidden ref={props.messageRefs.login}>message</span>
                 </div>
+                {
+                    props.isSignup && (
+                        <div className="input-wrapper">
+                            <input type="email" required placeholder="email" value={props.email} onChange={(e) => props.setEmail(e.target.value)} className="email-input" ref={props.inputRefs.email} />
+                            <span className="error-message" hidden ref={props.messageRefs.email}>message</span>
+                        </div>
+                    )
+                }
                 <div className="input-wrapper">
                     <input type="password" required placeholder="password" value={props.password} onChange={(e) => props.setPassword(e.target.value)} className="password-input" ref={props.inputRefs.password} />
                     <button className="show-password-toggle" type="button" ref={props.togglePasswordBtnRef} onClick={() => props.togglePassword()}>

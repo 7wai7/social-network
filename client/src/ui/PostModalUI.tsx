@@ -11,6 +11,11 @@ export default function PostModal(
         setAttachedFilesPreview,
         text,
         setText,
+        addTagText,
+        setAddTagText,
+        tags,
+        onKeydownAddTagInput,
+        onClickDeleteTag,
         postModalRef,
         publishPost,
     }: {
@@ -18,7 +23,12 @@ export default function PostModal(
         attachedFilesPreview: AttachedFile[],
         setAttachedFilesPreview: React.Dispatch<React.SetStateAction<AttachedFile[]>>,
         text: string,
-        setText: React.Dispatch<React.SetStateAction<string>>
+        setText: React.Dispatch<React.SetStateAction<string>>,
+        addTagText: string,
+        setAddTagText: React.Dispatch<React.SetStateAction<string>>,
+        tags: string[],
+        onKeydownAddTagInput: (e: React.KeyboardEvent<HTMLInputElement>) => void,
+        onClickDeleteTag: (deleteTag: string) => void,
         postModalRef: React.RefObject<HTMLDivElement | null>,
         publishPost: () => void,
     }
@@ -47,6 +57,19 @@ export default function PostModal(
                             setAttachedFilesPreview={setAttachedFilesPreview}
                             attachFileInputRef={attachFilesInputRef}
                         />
+                    </div>
+                    <div className="tags-list">
+                        {tags.map(tag =>
+                            <button className="tag-btn" key={tag} onClick={() => onClickDeleteTag(tag)}>{tag}</button>
+                        )}
+                        {tags.length < 5 && (
+                            <div className="add-tag-input-wrapper">
+                                <input className="add-tag-input" type="text" placeholder="Add tag" value={addTagText} onChange={(e) => setAddTagText(e.target.value)} onKeyDown={(e) => onKeydownAddTagInput(e)} />
+                                {tags.length === 0 && (
+                                    <div className="add-tag-hint">&#x2190; Add tags so more people will see your post</div>
+                                )}
+                            </div>
+                        )}
                     </div>
                     <div className="h-line"></div>
                     <div className="panel-bottom">

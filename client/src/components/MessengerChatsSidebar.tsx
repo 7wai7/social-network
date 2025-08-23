@@ -26,7 +26,7 @@ const MessengerChatsSidebar = (
     });
 
     const onChatClick = (chat: Chat) => {
-        console.log("select chat", chat);
+        // console.log("select chat", chat);
         getSocket()?.emit('join-chat', chat.id);
         props.setSelectedChat(chat);
         setSearchResults([]);
@@ -78,7 +78,7 @@ const MessengerChatsSidebar = (
                         e.currentTarget.src = "/default_profile.png"; // шлях до картинки "Фото не знайдено"
                     }}
                 />
-                <span>{user.login} {user.user_id}</span>
+                <span>{user.login}</span>
             </button>
         )
     }

@@ -2,7 +2,6 @@ import React, { useCallback, useRef, type JSX } from "react";
 import "./SinglePostPageUI.css"
 import { Link, useNavigate } from "react-router-dom";
 import Dropdown from "../components/Dropdown";
-import { renderPostFiles } from "../components/FeedPost";
 import { timeAgo } from "../other/globals";
 import type { Post } from "../types/post";
 import Loader from "../components/Loader";
@@ -13,6 +12,7 @@ import AttachedFilesPreview from "../components/AttachedFilesPreview";
 import type { AttachedFile } from "../types/attachedFile";
 import { fetchUnfollow } from "../services/api";
 import RenderComment from "../components/RenderComment";
+import AttachedFiles from "../components/AttachedFiles";
 
 export default function SinglePostPageUI(
     {
@@ -101,8 +101,15 @@ export default function SinglePostPageUI(
                         </div>
                         <div className='content'>
                             {post.text?.trim() && (<span className='post-text'>{post.text}</span>)}
-                            {renderPostFiles(post.files)}
+                            <AttachedFiles attachedFiles={post.files} />
                         </div>
+                        {post.tags?.length > 0 && (
+                            <div className="tags-list">
+                                {post.tags?.map(tag =>
+                                    <Link to={``} className="tag-link" key={tag.name}>#{tag.name}</Link>
+                                )}
+                            </div>
+                        )}
                     </>
                 }
             </div>}
@@ -148,7 +155,7 @@ const CommentForm = React.memo(({
 
     const onClickAttachFile = (e: React.MouseEvent) => {
         e.preventDefault();
-        
+
         const fileInput = attachFilesInputRef.current;
         if (fileInput) {
             fileInput.value = '';

@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Length } from 'class-validator';
+import { IsEmail, Length } from 'class-validator';
 import { LoginUserDto } from './login-user.dto';
 
 export class RegisterUserDto extends LoginUserDto {
-    @Length(3, 16, {
-        message: 'The login must be between 3 and 16 characters long.'
+    @IsEmail({}, {
+        message: 'Invalid email format.'
     })
-    @ApiProperty({ example: 'john_doe' })
-    readonly login: string;
+    @ApiProperty({ example: 'john.doe@gmail.com' })
+    readonly email: string;
 }

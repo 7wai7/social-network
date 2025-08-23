@@ -22,6 +22,11 @@ import * as path from 'path';
 import { Files } from './models/files.model';
 import { Messages } from './models/messages.model';
 import { MessageFiles } from './models/messageFiles.model';
+import { PostViews } from './models/postViews.model';
+import { PostTags } from './models/postTags.model';
+import { Tags } from './models/tags.model';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-ioredis-yet';
 dotenv.config();
 
 
@@ -46,10 +51,38 @@ dotenv.config();
 			username: process.env.POSTGRES_USER,
 			password: process.env.POSTGRES_PASSWORD,
 			database: process.env.POSTGRES_DB,
-			models: [Follow, User, Post, PostFiles, Comment, CommentFiles, Chat, ChatParticipants, Messages, MessageFiles, Files],
+			models: [
+				Follow,
+				User,
+				Post,
+				PostFiles,
+				Comment,
+				CommentFiles,
+				Chat,
+				ChatParticipants,
+				Messages,
+				MessageFiles,
+				Files,
+				PostViews,
+				PostTags,
+				Tags
+			],
 			autoLoadModels: true,
 			synchronize: true,
 			logging: false
+		}),
+		// CacheModule.registerAsync({
+		// 	isGlobal: true, // щоб не треба було імпортувати в кожному модулі
+		// 	useFactory: async () => ({
+		// 		store: await redisStore({
+		// 			url: 'redis://localhost:6379',
+		// 			ttl: 60 * 15, // за замовчуванням 15 хв кеш
+		// 		}),
+		// 	}),
+		// }),
+		CacheModule.register({
+			isGlobal: true,
+			ttl: 1000 * 60 * 15,
 		}),
 		UsersModule,
 		AuthModule,

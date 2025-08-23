@@ -28,8 +28,6 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
 
 
     const togglePassword = () => {
-        console.log('togglePassword');
-        
         if (!inputRefs.password.current) return;
         togglePasswordBtnRef.current?.classList.toggle('show');
         inputRefs.password.current.type === 'password' ? inputRefs.password.current.type = 'text' : inputRefs.password.current.type = 'password';
@@ -57,8 +55,6 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
             code: string
         }[]
     ) => {
-        console.log(errors);
-
         errors.forEach((err) => {
             const input = inputRefs[err.field].current;
             const message = messageRefs[err.field].current;
@@ -85,19 +81,15 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
 
             fetchRegister(body)
                 .then((data) => {
-                    console.log(data);
                     setUser(data);
                     navigate("/");
                 })
                 .catch((errors) => Array.isArray(errors) ? showErrors(errors) : console.log(errors))
         } else {
             const body = {
-                email: email,
+                login: login,
                 password: password
             }
-
-            console.log(body);
-            
 
             fetchLogin(body)
                 .then((data) => {

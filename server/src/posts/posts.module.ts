@@ -9,12 +9,13 @@ import { StorageModule } from 'src/storage/storage.module';
 import { UsersModule } from 'src/users/users.module';
 import { Files } from 'src/models/files.model';
 import { User } from 'src/models/users.model';
+import { Tags } from 'src/models/tags.model';
 
 @Module({
 	controllers: [PostsController],
 	providers: [PostsService],
 	imports: [
-		SequelizeModule.forFeature([User, Post, PostFiles, Files]),
+		SequelizeModule.forFeature([User, Post, Tags, PostFiles, Files]),
 		AuthModule,
 		StorageModule
 	],

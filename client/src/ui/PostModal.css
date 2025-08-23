@@ -33,87 +33,67 @@
 }
 
 .post-modal .post-textarea {
-    background-color: unset;
-    color: white;
-    border: none;
-    font-size: 18px;
-    width: 100%;
+    padding: 10px 0 !important;
+}
+
+
+.post-modal .attached-files-container {
+    max-height: none !important;
+    overflow-y: unset !important;
+    padding: 10px 0 !important;
 }
 
 .post-modal .media-container {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
     margin-top: 20px;
 }
 
-.post-modal .other-files-container {
-    margin-top: 20px;
-	display: flex;
-    flex-direction: column;
-    gap: 6px;
+
+
+.post-modal .tags-list {
+    padding: 0 10px;
+    margin: 4px 0;
+    height: 24px;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
 }
 
-.post-modal .other-files-container .file-preview {
+.post-modal .tag-btn {
+    color: white;
+    padding: 0 8px;
+    height: 100%;
+    border-radius: 50px;
+    background-color: var(--light-gray-transparent);
+}
+
+.post-modal .tag-btn:hover {
+    background-color: var(--accent);
+}
+
+.post-modal .add-tag-input-wrapper {
+    width: max-content;
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 6px;
-    color: white;
-    font-size: 18px;
 }
 
-.post-modal .other-files-container .file-preview .file-icon {
-    width: 30px;
-    height: 30px;
-}
-
-.post-modal .remove-btn {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 30px;
-    height: 30px;
-    padding: 6px;
-	background-color: rgba(211, 211, 211, 0.523);
-    border-radius: 50px;
-}
-
-.post-modal .remove-btn path {
-    fill: black;
-}
-
-.post-modal .file-preview .remove-btn {
-    position: static;
-    margin: auto;
-    margin-right: 10px;
+.post-modal .add-tag-input {
+	outline: none;
     background-color: unset;
-}
-
-.post-modal .file-preview .remove-btn path {
-    fill: white;
-}
-
-.post-modal .file-preview:has(.remove-btn:hover) {
-	background-color: var(--light-gray-transparent);
-}
-
-
-.post-modal .preview-img,
-.post-modal .preview-video {
-    width: 100%;
+    border: none;
+    color: white;
     position: relative;
-    max-width: 300px;
-	height: auto;
-	object-fit: contain;
-	background: #000;
+    width: 100px;
 }
 
-.post-modal img,
-.post-modal video {
-    width: 100%;
-	border-radius: 10px;
+.post-modal .add-tag-hint {
+    position: absolute;
+    color: white;
+    margin-left: 110px;
+    font-size: 14px;
 }
+
+
 
 .post-modal .panel-bottom {
     display: flex;

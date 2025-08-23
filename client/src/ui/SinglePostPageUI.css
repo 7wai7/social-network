@@ -114,7 +114,6 @@
     bottom: var(--footer-height);
     width: 100%;
     background-color: var(--background);
-    margin-top: 10px;
 }
 
 .write-comment-form .form-inputs {

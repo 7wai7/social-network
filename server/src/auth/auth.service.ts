@@ -16,13 +16,13 @@ export class AuthService {
     ) { }
 
     async login(userDto: LoginUserDto) {
-        const user = await this.userService.getUserByEmail(userDto.email);
+        const user = await this.userService.getUserByLogin(userDto.login);
         if (!user) {
             throw new HttpExceptionCode([
                 {
-                    field: 'email',
+                    field: 'login',
                     message: "A user does not exists.",
-                    code: "EMAIL_INVALID"
+                    code: "LOGIN_INVALID"
                 }
             ], HttpStatus.BAD_REQUEST);
         }

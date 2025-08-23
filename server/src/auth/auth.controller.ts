@@ -17,7 +17,7 @@ export class AuthController {
 
     @ApiOperation({
         summary: 'Вхід користувача в систему',
-        description: 'Аутентифікація користувача за допомогою логіну/email та паролю. Повертає JWT токен у httpOnly cookie та дані користувача.'
+        description: 'Аутентифікація користувача за допомогою логіну та паролю. Повертає JWT токен у httpOnly cookie та дані користувача.'
     })
     @ApiBody({
         description: 'Дані для входу користувача',
