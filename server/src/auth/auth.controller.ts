@@ -35,6 +35,8 @@ export class AuthController {
     })
     @Post("/login")
     async login(@Body() userDto: LoginUserDto, @Res() res: Response) {
+        console.log(userDto);
+        
         const { token, user } = await this.authService.login(userDto);
 
         // Set the JWT as an HttpOnly cookie for security

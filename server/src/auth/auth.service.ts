@@ -17,6 +17,8 @@ export class AuthService {
 
     async login(userDto: LoginUserDto) {
         const user = await this.userService.getUserByLogin(userDto.login);
+        console.log(user);
+        
         if (!user) {
             throw new HttpExceptionCode([
                 {

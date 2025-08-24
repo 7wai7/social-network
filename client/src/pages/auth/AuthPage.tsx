@@ -1,51 +1,44 @@
-import { useRef, useState, type JSX } from "react";
+import { useState, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchLogin, fetchRegister } from "../../services/api";
+import { fetchAuth } from "../../services/api";
 import { useUser } from "../../contexts/UserContext";
 import AuthPageUI from "../../ui/AuthPageUI";
+import type Auth from "../../types/auth";
 
 export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Element {
     const { setUser } = useUser()
     const navigate = useNavigate();
-    const [login, setLogin] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [auth, setAuth] = useState<Auth>(
+        {
+            login: '',
+            email: '',
+            password: ''
+        }
+    );
+
+    const initialInputsData = {
+        login: {
+            isError: false,
+            message: ''
+        },
+        email: {
+            isError: false,
+            message: ''
+        },
+        password: {
+            isError: false,
+            message: ''
+        }
+    };
+
+    const [inputsData, setInputsData] = useState(initialInputsData);
+    const [isShowPassword, setIsShowPassword] = useState(false);
+
     type Field = 'login' | 'email' | 'password';
-
-    const inputRefs = {
-        login: useRef<HTMLInputElement>(null),
-        email: useRef<HTMLInputElement>(null),
-        password: useRef<HTMLInputElement>(null),
-    }
-
-    const messageRefs = {
-        login: useRef<HTMLSpanElement>(null),
-        email: useRef<HTMLSpanElement>(null),
-        password: useRef<HTMLSpanElement>(null)
-    }
-
-    const togglePasswordBtnRef = useRef<HTMLButtonElement>(null);
 
 
     const togglePassword = () => {
-        if (!inputRefs.password.current) return;
-        togglePasswordBtnRef.current?.classList.toggle('show');
-        inputRefs.password.current.type === 'password' ? inputRefs.password.current.type = 'text' : inputRefs.password.current.type = 'password';
-    }
-
-    const hideErrors = () => {
-        const fields: Field[] = ['login', 'email', 'password'];
-
-        for (const key of fields) {
-            const input = inputRefs[key].current;
-            const message = messageRefs[key].current;
-
-            if (input && message) {
-                input.classList.remove('error');
-                message.setAttribute('hidden', '');
-                message.textContent = '';
-            }
-        }
+        setIsShowPassword(!isShowPassword);
     }
 
     const showErrors = (
@@ -55,63 +48,38 @@ export default function AuthPage({ isSignup }: { isSignup: boolean }): JSX.Eleme
             code: string
         }[]
     ) => {
-        errors.forEach((err) => {
-            const input = inputRefs[err.field].current;
-            const message = messageRefs[err.field].current;
-
-            if (input && message) {
-                input.classList.add('error');
-                message.removeAttribute('hidden');
-                message.textContent = err.message;
-            }
+        let updated = { ...initialInputsData };
+        errors.forEach(err => {
+            updated = {
+                ...updated,
+                [err.field]: {
+                    ...updated[err.field],
+                    isError: true,
+                    message: err.message
+                }
+            };
         });
+
+        setInputsData(updated);
     }
 
 
     const submit = (event: any) => {
         event.preventDefault()
-        hideErrors();
-
-        if (isSignup) {
-            const body = {
-                login: login,
-                email: email,
-                password: password
-            }
-
-            fetchRegister(body)
-                .then((data) => {
-                    setUser(data);
-                    navigate("/");
-                })
-                .catch((errors) => Array.isArray(errors) ? showErrors(errors) : console.log(errors))
-        } else {
-            const body = {
-                login: login,
-                password: password
-            }
-
-            fetchLogin(body)
-                .then((data) => {
-                    console.log(data);
-                    setUser(data);
-                    navigate("/");
-                })
-                .catch((errors) => Array.isArray(errors) ? showErrors(errors) : console.log(errors))
-        }
+        fetchAuth(auth, isSignup)
+            .then((data) => {
+                setUser(data);
+                navigate("/");
+            })
+            .catch((errors) => Array.isArray(errors) ? showErrors(errors) : console.log(errors))
     }
 
     return <AuthPageUI
-        login={login}
-        email={email}
-        password={password}
-        setLogin={setLogin}
-        setEmail={setEmail}
-        setPassword={setPassword}
+        auth={auth}
+        setAuth={setAuth}
         isSignup={isSignup}
-        inputRefs={inputRefs}
-        messageRefs={messageRefs}
-        togglePasswordBtnRef={togglePasswordBtnRef}
+        inputsData={inputsData}
+        isShowPassword={isShowPassword}
         togglePassword={togglePassword}
         submit={submit}
     />

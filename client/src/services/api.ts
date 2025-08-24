@@ -8,6 +8,7 @@ import type { Message } from '../types/message';
 import type { ChatUser } from '../types/chatUser';
 import type { File } from '../types/file';
 import type { Comment } from '../types/comment';
+import type Auth from '../types/auth';
 
 
 
@@ -32,33 +33,15 @@ async function fetch(promise: Promise<AxiosResponse<any, any>>) {
 	}
 }
 
-export async function fetchRegister(
-	body: {
-		login: string
-		email: string,
-		password: string
-	}
-): Promise<User> {
-	return await fetch(
-		api.post('/api/auth/register',
-			body,
-			{
-				headers: {
-					"Content-Type": "application/json",
-				}
-			}
-		)
-	)
-}
 
-export async function fetchLogin(
-	body: {
-		login: string,
-		password: string
-	}
+
+
+export async function fetchAuth(
+	body: Auth,
+	isSignup: boolean
 ): Promise<User> {
 	return await fetch(
-		api.post('/api/auth/login',
+		api.post(`/api/auth/${isSignup ? 'register' : 'login'}`,
 			body,
 			{
 				headers: {

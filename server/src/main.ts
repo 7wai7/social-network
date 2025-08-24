@@ -35,9 +35,9 @@ async function bootstrap() {
 		credentials: true,
 	});
 	app.useGlobalPipes(new ValidationPipe({
-		whitelist: true,        // видалити зайві поля
-		forbidNonWhitelisted: true, // кидати помилку при зайвих полях
-		transform: true,          // автоматично трансформувати до типів DTO
+		whitelist: true,            // видалити зайві поля
+		forbidNonWhitelisted: false, // кидати помилку при зайвих полях
+		transform: true,            // автоматично трансформувати до типів DTO
 		exceptionFactory: (errors: ValidationError[]) => {
 			console.log("errors", errors);
 

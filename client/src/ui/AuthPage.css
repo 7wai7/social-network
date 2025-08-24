@@ -123,22 +123,6 @@
     right: 10px;
 }
 
-.auth-panel .show-password-toggle .open-eye {
-    display: none;
-}
-
-.auth-panel .show-password-toggle .closed-eye {
-    display: block;
-}
-
-.auth-panel .show-password-toggle.show .open-eye {
-    display: block;
-}
-
-.auth-panel .show-password-toggle.show .closed-eye {
-    display: none;
-}
-
 .auth-panel .forgot-password-btn {
     margin-top: 6px;
     margin-right: 10px;
